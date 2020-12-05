@@ -2,6 +2,7 @@
 # bots.py
 
 import asyncio
+import csv
 import logging
 import os
 
