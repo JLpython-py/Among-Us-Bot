@@ -71,175 +71,65 @@ class MapBot(commands.Bot):
             embed.set_image(url="attachment://SabotageMap.png")
             await ctx.send(file=file, embed=embed)
 
-        @self.command(name="tasks", pass_context=True)
-        async def tasks(ctx):
-            ''' Returns a list of all the tasks on the map
-'''
-            embed = discord.Embed(title="Tasks", color=0x0000ff)
-            for i, task in enumerate(self.data['Tasks'], 1):
-                embed.add_field(name=i, value=task)
+        @self.command(name="list", pass_context=True)
+        async def list(ctx, category):
+            category = category.title()
+            if category not in self.data:
+                ctx.send(f"{category} cannot be found")
+                return
+            embed = discord.Embed(title=category, color=0x0000ff)
+            for i, cat in enumerate(self.data[category], 1):
+                embed.add_field(name=i, value=cat)
             await ctx.send(embed=embed)
 
-        @self.command(name="task_type", pass_context=True)
-        async def task_type(ctx, type_name):
-            ''' Returns a list of all the tasks by the type on the map
-'''
-            tasks = []
-            for task in self.data['Tasks']:
-                if type_name.title() in self.data['Tasks'][task]['Type']:
-                    tasks.append(task)
-            if not tasks:
-                await ctx.send(f"{type_name} cannot be found")
-                await ctx.message.delete()
+        @self.command(name="get", pass_context=True)
+        async def get(ctx, category, name):
+            category, name = category.title(), name.title()
+            dirname = category.lower()
+            if category not in self.data:
+                ctx.send(f"{category} cannot be found")
                 return
-            embed = discord.Embed(title=f"Task: {type_name}", color=0x0000ff)
-            for i, task in enumerate(tasks, 1):
-                embed.add_field(name=i, value=task)
-            await ctx.send(embed=embed)
-
-        @self.command(name="task", pass_context=True)
-        async def task(ctx, name):
-            ''' Returns information about a given task
-                Returns:
-                - Name of task
-                - Type of task
-                - Locations where the task can be completed
-                - Number of steps required to complete the task
-'''
-            data = None
-            for task in self.data['Tasks']:
-                if ''.join(name).lower() == ''.join(task.split()).lower():
-                    data = self.data['Tasks'][task]
-                    break
-            if data is None:
-                await ctx.send(f"{name} cannot be found")
-                await ctx.message.delete()
-                return
-            data = self.data['Tasks'][task]
-            embed = discord.Embed(title=f"Task: {task}", color=0x0000ff)
+            data = self.data.get(category)
+            embed = discord.Embed(title=f"{category}: {name}", color=0x0000ff)
             for aspect in data:
                 embed.add_field(name=aspect, value=data[aspect])
             filename = f"{data['Name']}.png"
             file = discord.File(
-                os.path.join('data', self.directory, 'tasks', filename),
+                os.path.join(
+                    'data', self.directory, dirname, filename),
                 filename)
-            embed.set_image(url=f"attachment://{filename}")
+            embed.set_image(f"attachment://{filename}")
             await ctx.send(file=file, embed=embed)
 
-        @self.command(name="locations", pass_context=True)
-        async def locations(ctx):
-            ''' Returns a list of all the locations on the map
-'''
-            embed = discord.Embed(title="Locations", color = 0x0000ff)
-            for i, room in enumerate(self.data["Locations"], 1):
-                embed.add_field(name=i, value=room)
-            await ctx.send(embed=embed)
-
-        @self.command(name="location", pass_context=True)
-        async def location(ctx, *name):
-            ''' Returns information about a given location
-                Returns:
-                - Name of location
-                - Directly connected locations
-                - Locations connected by vents
-                - Tasks which can be complete in the location
-                - Actions which can be cone in the locations
-                - Image of location
-'''
-            data = None
-            for location in self.data['Locations']:
-                if ''.join(name).lower() == ''.join(location.split()).lower():
-                    data = self.data['Locations'][location]
-                    break
-            if data is None:
-                await ctx.send(f"{name} cannot be found")
-                await ctx.message.delete()
+        @self.command(name="get_type", pass_context=True)
+        async def get_type(ctx, category, name):
+            if category not in self.data:
+                ctx.send(f"{category} cannot be found")
                 return
-            embed = discord.Embed(title=f"Location: {location}", color = 0x0000ff)
-            for aspect in data:
-                embed.add_field(name=aspect, value=data[aspect])
-            filename = f"{data['Name']}.png"
-            file = discord.File(
-                os.path.join('data', self.directory, 'locations', filename),
-                filename)
-            embed.set_image(url=f"attachment://{filename}")
-            await ctx.send(file=file, embed=embed)
-
-        @self.command(name="vents", pass_context=True)
-        async def vents(ctx):
-            ''' Returns a list of all the vents on the map
-'''
-            embed = discord.Embed(title="Vents", color=0x0000ff)
-            for i, vent in enumerate(self.data["Vents"], 1):
-                embed.add_field(name=i, value=vent)
-            await ctx.send(embed=embed)
-
-        @self.command(name="vent", pass_context=True)
-        async def vent(ctx, *name):
-            ''' Returns information about a given vent
-                Returns:
-                - Name of location
-                - Locations connected by vents
-'''
-            data = None
-            for vent in self.data['Vents']:
-                if ''.join(name).lower() == ''.join(vent.split()).lower():
-                    data = self.data['Vents'][vent]
-                    break
-            if data is None:
+            data = self.data.get(category)
+            items = []
+            for item in data:
+                if name.title() in data['Type']:
+                    items.append(item)
+            if not items:
                 await ctx.send(f"{name} cannot be found")
-                await ctx.message.delete()
                 return
-            embed = discord.Embed(title=f"Vent: {vent}", color=0x0000ff)
-            for aspect in data:
-                embed.add_field(name=aspect, value=data[aspect])
+            embed = discord.Embed(title=f"{category}: {name}", color=0x0000ff)
+            for i, item in enumerate(items, 1):
+                embed.add_field(name=i, value=item)
             await ctx.send(embed=embed)
-
-        @self.command(name="actions", pass_context=True)
-        async def actions(ctx):
-            ''' Returns a list of al the actions on the map
-'''
-            embed = discord.Embed(title="Actions", color=0x0000ff)
-            for i, action in enumerate(self.data["Actions"], 1):
-                embed.add_field(name=i, value=action)
-            await ctx.send(embed=embed)
-
-        @self.command(name="action", pass_contextroo=True)
-        async def action(ctx, *name):
-            ''' Returns information about a given action
-                Returns
-                - Name of action
-                - Type of action
-                - Locations where action can be done
-                - Severity of action
-'''
-            data = None
-            for action in self.data['Actions']:
-                if ''.join(name).lower() == ''.join(action.split()).lower():
-                    data = self.data['Actions'][action]
-                    break
-            if data is None:
-                await ctx.send(f"{name} cannot be found")
-                await ctx.message.delete()
-                return
-            embed = discord.Embed(title=f"Action: {action}", color=0x0000ff)
-            for aspect in data:
-                embed.add_field(name=aspect, value=data[aspect])
-            filename = f"{data['Name']}.png"
-            file = discord.File(
-                os.path.join('data', self.directory, 'actions', filename),
-                filename)
-            embed.set_image(url=f"attachment://{filename}")
-            await ctx.send(file=file, embed=embed)
 
 class Main:
     def __init__(self):
         ''' Create and run MapBot-class bots for each Among Us map
 '''
         self.bots = {
-            'Mira HQ': os.environ.get('MIRAHQ'),
-            'Polus': os.environ.get('POLUS'),
-            'The Skeld': os.environ.get('THESKELD')}
+            'Mira HQ': os.environ.get('MIRAHQ', None),
+            'Polus': os.environ.get('POLUS', None),
+            'The Skeld': os.environ.get('THESKELD', None)}
+        if None in self.bots.values():
+            with open(os.path.join('data', 'tokens.csv')) as file:
+                self.bots = dict(list(csv.reader(file, delimiter='\t')))
         self.loop = asyncio.get_event_loop()
         for bot in self.bots:
             directory = ''.join(bot.split())
