@@ -75,7 +75,7 @@ class MapBot(commands.Bot):
         async def list(ctx, category):
             category = category.title()
             if category not in self.data:
-                ctx.send(f"{category} cannot be found")
+                await ctx.send(f"{category} cannot be found")
                 return
             embed = discord.Embed(title=category, color=0x0000ff)
             for i, cat in enumerate(self.data[category], 1):
@@ -87,9 +87,11 @@ class MapBot(commands.Bot):
             category, name = category.title(), name.title()
             dirname = category.lower()
             if category not in self.data:
-                ctx.send(f"{category} cannot be found")
+                await ctx.send(f"{category} cannot be found")
                 return
-            data = self.data.get(category)
+            data = self.data[category].get(name)
+            if data is None:
+                await ctx.send(f"{name} cannot be found in {category}")
             embed = discord.Embed(title=f"{category}: {name}", color=0x0000ff)
             for aspect in data:
                 embed.add_field(name=aspect, value=data[aspect])
@@ -98,26 +100,8 @@ class MapBot(commands.Bot):
                 os.path.join(
                     'data', self.directory, dirname, filename),
                 filename)
-            embed.set_image(f"attachment://{filename}")
+            embed.set_image(url=f"attachment://{filename}")
             await ctx.send(file=file, embed=embed)
-
-        @self.command(name="get_type", pass_context=True)
-        async def get_type(ctx, category, name):
-            if category not in self.data:
-                ctx.send(f"{category} cannot be found")
-                return
-            data = self.data.get(category)
-            items = []
-            for item in data:
-                if name.title() in data['Type']:
-                    items.append(item)
-            if not items:
-                await ctx.send(f"{name} cannot be found")
-                return
-            embed = discord.Embed(title=f"{category}: {name}", color=0x0000ff)
-            for i, item in enumerate(items, 1):
-                embed.add_field(name=i, value=item)
-            await ctx.send(embed=embed)
 
 class Main:
     def __init__(self):
