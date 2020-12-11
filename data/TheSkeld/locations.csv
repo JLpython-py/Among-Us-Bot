@@ -10,6 +10,6 @@ O2,"Navigation, Shields, Weapons",None,"Clean O2 Filter, Divert Power(2/2), Empt
 Reactor,"Lower Engine, Security, Upper Engine","Lower Engine, Upper Engine","Start Reactor, Unlock Manifolds",Fix Reactor Meltdown
 Security,"Lower Engine, Reactor, Upper Engine","Electrical, MedBay","Divert Power(2/2), Fix Wiring",Check Security Cameras
 Shields,"Communications, Navigation, O2, Storage, Weapons",Navigation(S),"Divert Power(2/2), Prime Shields",None
-Storage,"Admin, Cafeteria, Communications, Electrical, Lower Engine, Shields",None,"Fix Wiring,  Empty Chute(2/2), Empty Garbage(2/2), Fuel Engines (1/4,3/4)"
+Storage,"Admin, Cafeteria, Communications, Electrical, Lower Engine, Shields",None,"Fix Wiring,  Empty Chute(2/2), Empty Garbage(2/2), Fuel Engines (1/4,3/4)",None
 Upper Engine,"Cafeteria, Lower Engine, MedBay, Reactor, Security",Reactor(N),"Align Engine Output(1/2), Divert Power(2/2), Fuel Engines(2/4)",None
 Weapons,"Cafeteria, Navigation, O2, Shields",Navigation(N),"Clear Asteroids, Divert Power(2/2), Upload Data(1/2)",None
