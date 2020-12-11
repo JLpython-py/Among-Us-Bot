@@ -8,7 +8,7 @@ Greenhouse,"Admin, Office, Hallway","Admin, Office","Clean O2 Filter, Divert Pow
 Hallway,"Admin, Cafeteria, Communications, Greenhouse, Launchpad, Locker Room, MedBay, Office",None,Fix Wiring,"North Sensor, Southeast Sensor, Southwest Sensor"
 Laboratory,"Decontamination, Reactor","Decontamination, Office, Reactor","Assemble Artifact, Divert Power, Sort Samples",None
 Launchpad,"Communications, Hallway, Locker Room, MedBay","Locker Room, Reactor","Divert Power(2/2), Fuel Engines, Run Diagnostics",Fix O2 Depletion
-Locker Room,"Communications, Decontamination, Hallway, Launchpad, MedBay",Fix Wiring,None
+Locker Room,"Communications, Decontamination, Hallway, Launchpad, MedBay","Decontamination, Launchpad, MedBay",Fix Wiring,None
 MedBay,"Communications, Hallway, Launchpad, Locker Room","Balcony, Locker Room","Divert Power, Submit Scan",None
 Office,"Admin, Greenhouse, Hallway","Admin, Greenhouse, Laboratory",Process Data,"Fix Communications Sabotage(2/2), Fix Lights"
 Reactor,"Decontamination, Laboratory","Decontamination, Laboratory, Launchpad","Divert Power, Start Reactor, Unlock Manifolds","Fix Reactor Meltdown(1/2), Fix Reactor Meltdown(2/2)"
