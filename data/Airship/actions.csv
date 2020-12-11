@@ -1,3 +1,3 @@
-Name	Type	Rooms	Severity
-Check Security Cameras	Montior	Security	N/A
-Fix O2 Depletion	Fix Sabotage	Gap Room, Gap Room	Fatal
+Name,Type,Rooms,Severity
+Check Security Cameras,Montior,Security,N/A
+Fix O2 Depletion,Fix Sabotage,"Gap Room, Gap Room",Fatal
