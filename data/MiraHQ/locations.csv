@@ -4,7 +4,7 @@ Balcony,Cafeteria,"Cafeteria, MedBay","Clear Asteroids, Measure Weather",None
 Cafeteria,"Balcony, Hallway, Storage","Admin, Balcony","Buy Beverage, Divert Power(2/2), Empty Garbage",Call Emergency Meeting
 Communications,"Hallway, Launchpad, Locker Room, MedBay",None,Divert Power(2/2),"Check Sensors, Fix Communications Sabotage(1/2)"
 Decontamination,"Laboratory, Locker Room, Reactor","Laboratory, Locker Room, Reactor",None,None
-Greenhouse,"Admin, Office, Hallway, Admin, Office","Clean O2 Filter, Divert Power, Fix Wiring, Water Plants",Fix O2 Depletion
+Greenhouse,"Admin, Office, Hallway","Admin, Office","Clean O2 Filter, Divert Power, Fix Wiring, Water Plants",Fix O2 Depletion
 Hallway,"Admin, Cafeteria, Communications, Greenhouse, Launchpad, Locker Room, MedBay, Office",None,Fix Wiring,"North Sensor, Southeast Sensor, Southwest Sensor"
 Laboratory,"Decontamination, Reactor","Decontamination, Office, Reactor","Assemble Artifact, Divert Power, Sort Samples",None
 Launchpad,"Communications, Hallway, Locker Room, MedBay","Locker Room, Reactor","Divert Power(2/2), Fuel Engines, Run Diagnostics",Fix O2 Depletion
