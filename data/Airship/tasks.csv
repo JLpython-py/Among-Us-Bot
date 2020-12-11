@@ -1,1 +1,12 @@
 Name	Type	Room	Steps	Description
+Calibrate Distributor	Short	Electrical	1	"Press the button below the meter in time to that the spinning black node connects with the device."
+Clean Toilet	???	Lounge	1	???
+Divert Power	Long	(1) Electrical. (2) Gap Room, Showers, ???.	2	"Step 1: Pull up the glowing lever on the device. Step 2: Flip the switch in the center."
+Empty Garbage	???	Medical, Meeting Room	2	???
+Enter ID Code	Common, Short	Cockpit	1	"Take the ID out of the wallet and type the ID code into the screen"
+Fix Wiring	Common, Short	Lounge, Viewing Deck, ???	3	"Step 1, 2, 3: Connect wires of the same color."
+Polish Ruby	???	Vault	1	???
+Put Away Rifles	???	Armory	1	???
+Reset Breakers	???	Electrical, ???	7	???
+Stabilize Steering	???	Cockpit	1	"Move the cursor to the center."
+Upload Data	Short	(1) Gap Room, Records, Vault, ???. (2).	"Step 1: Press the 'Download' button. Step 2: Press the 'Upload' button."
