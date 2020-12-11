@@ -4,7 +4,7 @@ Buy Beverage,Short,Cafeteria,1,Buy the drink which is depicted in the lower righ
 Chart Course,Short,Admin,1,Tap and drag the ship along the grid line.
 Clean O2 Filter,Short,Greenhouse,1,Tap and drag the floating leaves toward the hole.
 Clear Asteroids,Long,Balcony,1,Tap and destroy 20 asteroids.
-Divert Power,"Visual, Long","(1) Reactor. (2) Admin, Cafeteria, Communications, Greenhouse, Laboratory, Launchpad, MedBay, Office",2
+Divert Power,"Visual, Long","(1) Reactor. (2) Admin, Cafeteria, Communications, Greenhouse, Laboratory, Launchpad, MedBay, Office",2,Step 1: Pull up the glowing lever on the device. Step 2: Flip the switch in the center.
 Empty Garbage,Short,Cafeteria,1
 Enter ID Code,Common,Admin,1,Take the ID out of the wallet and type the ID code into the screen
 Fix Wiring,Common,"Greenhouse, Hallway(C), Hallway(N), Locker Room, Storage",3
