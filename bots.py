@@ -95,13 +95,13 @@ class MapBot(commands.Bot):
             embed = discord.Embed(title=f"{category}: {name}", color=0x0000ff)
             for aspect in data:
                 embed.add_field(name=aspect, value=data[aspect])
-            filename = f"{data['Name']}.png"
-            file = discord.File(
+            image_fname = f"{data['Name']}.png"
+            image = discord.File(
                 os.path.join(
-                    'data', self.directory, dirname, filename),
-                filename)
-            embed.set_image(url=f"attachment://{filename}")
-            await ctx.send(file=file, embed=embed)
+                    'data', self.directory, dirname, image_fname),
+                image_fname)
+            embed.set_image(url=f"attachment://{image_fname}")
+            await ctx.send(file=image, embed=embed)
 
 class Main:
     def __init__(self):
