@@ -34,7 +34,7 @@ class MapBot(commands.Bot):
 '''
         for category in self.files:
             with open(self.files[category]) as file:
-                data = list(csv.reader(file, delimiter='\t'))
+                data = list(csv.reader(file))
                 headings = data.pop(0)
             self.data[category] = {}
             for row in data:
