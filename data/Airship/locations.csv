@@ -1,19 +1,19 @@
 Name,Connections,Vents,Tasks,Actions
-Armory,"Communications, Kitchen",???,"Divert Power (2/2), Put Away Rifles, Upload Data(1/2) ???",???
-Cargo Bay,"Lounge, Medical, Showers","","Fix Wiring, Fuel Engine(1/4, 3/4), Upload Data (2/2)",???
-Cockpit,Communications,"","Divert Power(2/2), Enter ID Code, Stabilize Steering, Upload Data (1/2), ???",View Admin Map
-Communications,"Armory, Cockpit, Engine Room",???,???,???
-Brig,"Engine Room, Gap Room, Vault",???,???,???
-Electrical,"Main Hall, Medical, Security",???,"Calibrate Distributor, Divert Power (1/2), Reset Breakers (1/7), ???",???
-Engine Room,"Brig, Communications, Main Hall","","Divert Power (2/2), Fuel Engine (2/4, 4/4), Upload Data (1/2), ???",???
-Gap Room,"Brig, Meeting Room, Records","","Divert Power (2/2), Upload Data (1/2),???","Fix O2 Depletion (1/2), Fix O2 Depletion (2/2)"
-Kitchen,"Armory, Security, Viewing Deck",???,???,???
-Lounge,"Cargo Bay, Records",???,"Clean Toilet, Fix Wiring, ???",???
-Main Hall,"Electrical, Engine Room, Showers","","Divert Power (2/2)",???
-Medical,"Cargo Bay, Electrical",???,"Empty Garbage (1/2), Upload Data (1/2)",???
-Meeting Room,"Gap Room",???,"Divert Power (2/2), Empty Garbage (2/2), Enter ID Code, Fix Wiring, ???",???
-Records,"Gap Room, Lounge, Showers","","Sort Records (1/4), Upload Data (1/2), ???",???
-Security,"Electrical, Kitchen",???,???,Check Security Cameras
-Showers,"Cargo Bay, Main Hall, Records","","Divert Power (2/2), Fix Wiring, ???",???
-Vault,Brig,"","Polish Ruby, Upload Data (1/2), ???",???
-Viewing Deck,Kitchen,???,Fix Wiring,???
+Armory,"Communications, Kitchen",None,"Divert Power (2/2), Puts Away Pistols, Put Away Rifles, Upload Data (1/2)",???
+Cargo Bay,"Lounge, Medical, Showers","","Fix Wiring, Fuel Engines (1/4, 3/4), Unlock Safe, Upload Data (1/2)",???
+Cockpit,Communications,"","Divert Power(2/2), Stabilize Steering, Upload Data (1/2), ???",View Admin Map
+Communications,"Armory, Cockpit, Engine Room",None,???,???
+Brig,"Engine Room, Gap Room, Vault",None,"Upload Data (1/2)",???
+Electrical,"Main Hall, Medical, Security",None,"Calibrate Distributor, Divert Power (1/2), Reset Breakers",???
+Engine Room,"Brig, Communications, Main Hall","","Divert Power (2/2), Fuel Engine (2/4, 4/4), Upload Data (1/2)",???
+Gap Room,"Brig, Meeting Room, Records","","Upload Data (1/2)","Avert Crash Course (1/2), Avert Crash Course (2/2)"
+Kitchen,"Armory, Security, Viewing Deck",None,"Empty Garbage (1/2)",???
+Lounge,"Cargo Bay, Records",None,"Clean Toilet, Fix Wiring",???
+Main Hall,"Electrical, Engine Room, Showers","","Decontaminate, Develop Photos, Fix Wiring",???
+Medical,"Cargo Bay, Electrical",None,"Empty Garbage (1/2)",???
+Meeting Room,"Gap Room",None,"Divert Power (2/2), Empty Garbage (2/2), Enter ID Code, Fix Wiring",???
+Records,"Gap Room, Lounge, Showers","","Sort Records, Upload Data (1/2)",???
+Security,"Electrical, Kitchen",None,"Rewind Tapes, Upload Data (2/2)",Check Security Cameras
+Showers,"Cargo Bay, Main Hall, Records","","Divert Power (2/2)",???
+Vault,Brig,"","Dress Mannequin, Polish Ruby, Upload Data (1/2), ???",???
+Viewing Deck,Kitchen,None,,???
