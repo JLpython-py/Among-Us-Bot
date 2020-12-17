@@ -7,7 +7,7 @@ Clear Asteroids,Long,Balcony,1,Tap and destroy 20 asteroids.
 Divert Power,"Visual, Long","(1) Reactor. (2) Admin, Cafeteria, Communications, Greenhouse, Laboratory, Launchpad, MedBay, Office",2,Step 1: Pull up the glowing lever on the device. Step 2: Flip the switch in the center.
 Empty Garbage,Short,Cafeteria,1,Pull and hold the lever.
 Enter ID Code,Common,Admin,1,Take the ID out of the wallet and type the ID code into the screen
-Fix Wiring,Common,"Greenhouse, Hallway(C), Hallway(N), Locker Room, Storage",3,"Step 1, 2, 3: Connect wires of the same color."
+Fix Wiring,Common,"(1) Storage, Hallway, Locker Room. (2) Greenhouse, Hallway, Locker Room. (3) Greenhouse, Laboratory, Locker Room."3,"Step 1, 2, 3: Connect wires of the same color."
 Fuel Engine,Long,Launchpad,1,"Fill the gas tank by pressing and holding the button."
 Measure Weather,Short,Balcony,1,Press the 'Begin' button on the lower right corner
 Prime Shields,Short,Admin,1,"Tap all the red cells to make all the cells white."
