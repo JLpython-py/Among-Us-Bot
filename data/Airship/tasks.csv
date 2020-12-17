@@ -17,5 +17,5 @@ Rewind Tapes,Short,Security,1,"Press the rewind, pause, play, and fast-forward b
 Sort Records,Long,Records,4,"(1-4) Click on the file then place the file in the appropriate area."
 Stabilitze Steering,Short,Cockpit,1,"Move the cursor to the center."
 Start Fans,Long,"(1) Ventilation(W), (2) Ventilation (E)",2,"(1) Click 'Reveal Code' and remember the code. (2) Click 'Enter Code' and enter the code."
-Unlock Safe,Short,Cargo Bay,"Use the paper to turn the dial to the correct numbers and in the correct direction. Then, rotate the wheel."
+Unlock Safe,Short,Cargo Bay,1,"Use the paper to turn the dial to the correct numbers and in the correct direction. Then, rotate the wheel."
 Upload Data,Short,"(1) Armory, Brig, Cargo Bay, Cockpit, Gap Room, Records, Vault. (2) Security (Outside).",2,"Step 1: Press the 'Download' button. Step 2: Move the device until the connection reads PERFECT then wait for the data to upload"
