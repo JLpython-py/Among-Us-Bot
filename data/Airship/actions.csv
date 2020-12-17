@@ -1,8 +1,8 @@
 Name,Type,Rooms,Severity
+Avert Crash Course,Fix Sabotage,"Gap Room(E), Gap Room(W)",Fatal
 Call Emergency Meeting,N/A,Meeting Room,N/A
 Check Security Cameras,Surveillance,Security,N/A
 Fix Communications Sabotage,Fix Sabotage,Communications,Major
 Fix Lights,Fix Sabotage,Electrical,Major
-Fix Reactor Meltdown,Fix Sabotage,"Gap Room, Gap Room",Fatal
 Open Doors,Fix Sabotage, "Brig, Communications, Electrical, Main Hall, Medical, Records",Minor
 View Admin Map,Surveillance,Cockpit,N/A
