@@ -112,7 +112,8 @@ class Main:
         self.bots = {
             'Mira HQ': os.environ.get('MIRAHQ', None),
             'Polus': os.environ.get('POLUS', None),
-            'The Skeld': os.environ.get('THESKELD', None)}
+            'The Skeld': os.environ.get('THESKELD', None),
+            'Airship': os.environ.get('AIRSHIP', None)}
         if None in self.bots.values():
             with open(os.path.join('data', 'tokens.csv')) as file:
                 self.bots = dict(list(csv.reader(file, delimiter='\t')))
