@@ -53,10 +53,12 @@ class MapBot(commands.Bot):
         async def map(ctx):
             ''' Returns a high-detailed image of the corresponding map
 '''
+            filepath = os.path.join('data', self.directory, "Map.png")
+            if not os.path.exists(filepath):
+                await ctx.send("Could not load image")
+                return
             embed = discord.Embed(title="Map", color=0x0000ff)
-            file = discord.File(
-                os.path.join('data', self.directory, "Map.png"),
-                "Map.png")
+            file = discord.File(filepath, "Map.png")
             embed.set_image(url="attachment://Map.png")
             await ctx.send(file=file, embed=embed)
 
@@ -64,10 +66,12 @@ class MapBot(commands.Bot):
         async def sabotage_map(ctx):
             ''' Returns an image of the sabotage map of the corresponding map
 '''
+            filepath = os.path.join('data', self.directory, "SabotageMap.png")
+            if not os.path.exists(filepath):
+                await ctx.send("Could not load image")
+                return
             embed = discord.Embed(title="Sabotage Map", color=0x0000ff)
-            file = discord.File(
-                os.path.join('data', self.directory, "SabotageMap.png"),
-                "SabotageMap.png")
+            file = discord.File(filepath, "SabotageMap.png")
             embed.set_image(url="attachment://SabotageMap.png")
             await ctx.send(file=file, embed=embed)
 
@@ -95,10 +99,10 @@ class MapBot(commands.Bot):
             embed = discord.Embed(title=f"{category}: {name}", color=0x0000ff)
             for aspect in data:
                 embed.add_field(name=aspect, value=data[aspect])
+            image_fname = f"{data['Name']}.png"
             image_path = os.path.join(
                 'data', self.directory, dirname, image_fname)
             if os.path.exists(image_path):
-                image_fname = f"{data['Name']}.png"
                 image = discord.File(image_path, image_fname)
                 embed.set_image(url=f"attachment://{image_fname}")
                 await ctx.send(file=image, embed=embed)
