@@ -1,12 +1,13 @@
 Name,Connections
-Cargo Bay,Showers
-Cockpit,""
+Cargo Bay,"Records, Showers"
+Cockpit,"Vault, Viewing Deck"
 Engine Room,"Kitchen, Main Hall(S)"
-Gap Room(E),""
-Gap Room(W),""
+Gap Room(E),"Gap Room(W), Main Hall(N)"
+Gap Room(W),"Gap Room(E), Main Hall(N)"
 Kitchen,"Engine Room, Main Hall(S)"
-Main Hall(N),""
+Main Hall(N),"Gap Room(E), Gap Room(W)"
 Main Hall(S),"Engine Room, Kitchen"
 Records,"Cargo Bay, Showers"
-Showers,Cargo Bay
-Vault,""
+Showers,"Cargo Bay, Records"
+Vault,"Cockpit"
+Viewing Deck,"Cockpit"
