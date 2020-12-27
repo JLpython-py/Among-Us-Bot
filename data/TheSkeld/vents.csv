@@ -2,11 +2,11 @@ Name,Connections
 Admin,"Cafeteria, O2"
 Cafeteria,"Admin, O2"
 Electrical,"MedBay, Security"
+Hallway,"Admin, Cafeteria"
 Lower Engine,Reactor(S)
 MedBay,"Electrical, Security"
 Navigation(N),Weapons
 Navigation(S),Shields
-O2,"Admin, Cafeteria"
 Reactor(N),Upper Engine
 Reactor(S),Lower Engine
 Security,"Electrical, MedBay"

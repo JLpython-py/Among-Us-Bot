@@ -1,3 +1,5 @@
-amongus-map/
-amongus-mapbot/
+amongus-map
+amongus-mapbot
+virtualenv/
 data/tokens.csv
+data/Airship/

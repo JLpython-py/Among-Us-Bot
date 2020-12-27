@@ -8,7 +8,7 @@ Divert Power,"Visual, Long","(1) Reactor. (2) Admin, Cafeteria, Communications, 
 Empty Garbage,Short,Cafeteria,1,Pull and hold the lever.
 Enter ID Code,Common,Admin,1,Take the ID out of the wallet and type the ID code into the screen
 Fix Wiring,Common,"(1) Storage, Hallway, Locker Room. (2) Greenhouse, Hallway, Locker Room. (3) Greenhouse, Laboratory, Locker Room."3,"Step 1, 2, 3: Connect wires of the same color."
-Fuel Engine,Long,Launchpad,1,"Fill the gas tank by pressing and holding the button."
+Fuel Engines,Long,Launchpad,1,"Fill the gas tank by pressing and holding the button."
 Measure Weather,Short,Balcony,1,Press the 'Begin' button on the lower right corner
 Prime Shields,Short,Admin,1,"Tap all the red cells to make all the cells white."
 Process Data,Short,Office,1,Press the 'Upload' button

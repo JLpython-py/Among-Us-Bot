@@ -1,5 +1,5 @@
 Name,Type,Locations,Severity
-View Admin Table,Surveillance,Admin,N/A
+View Admin Map,Surveillance,Admin,N/A
 Check Sensors,Surveillance,Communications,N/A
 Fix Communications Sabotage,Fix Sabotage,"Communications, Office",Major
 Fix Lights,Fix Sabotage,Office,Major

@@ -1,5 +1,5 @@
 Name,Type,Locations,Severity
-View Admin Table,Monitor,Admin,N/A
+View Admin Map,Monitor,Admin,N/A
 Check Security Cameras,Monitor,Security,N/A
 Fix Communications Sabotage,Fix Sabotage,Communications,Major
 Fix Lights,Fix Sabotage,Electrical,Major

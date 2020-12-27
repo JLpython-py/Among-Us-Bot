@@ -1,6 +1,6 @@
 Name,Type,Locations,Steps,Description
 Align Engine Output,Short,"Lower Engine, Upper Engine",2,"Step 1, 2: Move the arrow and align the center line with the green grid."
-Calibrate Distributer,Short,Electrical,1,Press the button below the meter in time to that the spinning black node connects with the device.
+Calibrate Distributor,Short,Electrical,1,Press the button below the meter in time to that the spinning black node connects with the device.
 Chart Course,Short,Navigation,1,Tap and drag the ship along the grid line.
 Clean O2 Filter,Short,O2,1,Tap and drag the floating leaves toward the hole.
 Clear Asteroids,"Visual, Long",Weapons,1,Tap and destroy 20 asteroids.
