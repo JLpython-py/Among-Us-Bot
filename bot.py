@@ -46,7 +46,7 @@ class ParseData:
             await embed.message.delete()
             del self.searches[category][ctx.message.author.id]
         embed = ScrollingEmbed(
-            ctx.message, self.data, category, self.name)
+            self.dir, ctx.message, self.data, category, self.name)
         embed.manage_embed()
         await embed.send_with_reactions()
         self.searches[category][ctx.message.author.id] = embed
@@ -175,6 +175,11 @@ class MapBot(commands.Bot):
         @self.command(name="retrieve", pass_context=True,
                       aliases=["r"])
         async def retrieve(ctx, mapname, category, option):
+            ''' [Embed] Returns data about the given option on the map
+                <mapname>: MiraHQ, TheSkeld, Polus
+                <category>: actions, locations, tasks, maps, vents
+                <option>: *Varies with the <category> command
+'''
             mapname = mapname.lower()
             cog = self.map_cogs.get(mapname)
             if cog is None:
@@ -194,6 +199,13 @@ class MapBot(commands.Bot):
         @self.command(name="search", pass_context=True,
                       aliases=["s"])
         async def search(ctx, mapname, category):
+            ''' [Embed] Used to browse through the options for a category
+                Use the button reactions to scroll through the options
+                Use the check reaction to select the option
+                Use the 'x' reaction to close the message
+                <mapname>: MiraHQ, TheSkeld, Polus
+                <category>: actions, locations, tasks, maps, vents
+'''
             mapname = mapname.lower()
             cog = self.map_cogs.get(mapname)
             if cog is None:
@@ -207,7 +219,8 @@ class MapBot(commands.Bot):
             await cog.data_parser.search(ctx, category)
 
 class ScrollingEmbed:
-    def __init__(self, message, data, category, name):
+    def __init__(self, directory, message, data, category, name):
+        self.dir = directory
         self.channel = message.channel
         self.memberid = message.author.id
         self.category = category
@@ -224,9 +237,14 @@ class ScrollingEmbed:
             text=f"{self.name}: Page {index+1}/{len(self.items)}")
         for item in self.data:
             self.embed.add_field(name=item, value=self.data[item])
+        image_name = f"{self.dir}.png"
+        image_path = os.path.join('data', image_name)
+        self.image = discord.File(image_path, image_name)
+        self.embed.set_image(url=f"attachment://{image_name}")
 
     async def send_with_reactions(self):
-        self.message = await self.channel.send(embed=self.embed)
+        self.message = await self.channel.send(
+            file=self.image, embed=self.embed)
         reactions = [
             u'\u23ee', u'\u23ea', u'\u25c0', u'\u25b6', u'\u23e9', u'\u23ed',
             u'\u2714', u'\u274c']
