@@ -14,36 +14,216 @@ from discord.ext import commands
 logging.basicConfig(
     level=logging.INFO, format=' %(asctime)s - %(levelname)s - %(message)s')
 
+class ParseData:
+    def __init__(self, data, name, directory):
+        self.data = data
+        self.name = name
+        self.dir = directory
+        self.searches = {
+            "actions": {}, "locations": {}, "maps": {}, "tasks": {},
+            "vents": {}}
+
+    async def retrieve(self, ctx, category, option):
+        data = self.data[category].get(option)
+        embed = discord.Embed(
+            title=f"{category.title()}: {option.title()}",
+            color=0x0000ff)
+        for item in data:
+            embed.add_field(name=item, value=data[item])
+        embed.set_footer(text=self.name)
+        image_name = f"{data['Name']}.png"
+        image_path = os.path.join(
+            'data', self.dir, category, image_name)
+        image = discord.File(image_path, image_name)
+        embed.set_image(url=f"attachment://{image_name}")
+        await ctx.channel.send(file=image, embed=embed)
+        await ctx.message.delete()
+
+    async def search(self, ctx, category):
+        items = self.data.get(category)
+        if ctx.message.author.id in self.searches[category]:
+            embed = self.searches[category][ctx.message.author.id]
+            await embed.message.delete()
+            del self.searches[category][ctx.message.author.id]
+        embed = ScrollingEmbed(
+            ctx.message, self.data, category, self.name)
+        embed.manage_embed()
+        await embed.send_with_reactions()
+        self.searches[category][ctx.message.author.id] = embed
+        await ctx.message.delete()
+
+    async def retrieve_from_search(self, payload, category):
+        embed = self.searches[category].get(payload.member.id)
+        items = self.data.get(category)
+        data = items.get(embed.option)
+        await self.retrieve(
+            embed, embed.category, embed.option)
+        del self.searches[category][payload.member.id]
+
+    async def scroll(self, payload, category):
+        embed = self.searches[category].get(payload.member.id)
+        await embed.scroll(payload)
+        
+    async def delete_search(self, payload, category):
+        embed = self.searches[category].get(payload.member.id)
+        await embed.message.delete()
+        del self.searches[category][payload.member.id]
+
+class Airship(commands.Cog):
+
+    def __init__(self, bot, data):
+        self.bot = bot
+        self.data = data
+        self.name = "Airship"
+        self.dir = 'airship'
+        self.data_parser = ParseData(self.data, self.name, self.dir)
+
+    async def retrieve(self, ctx, category, option):
+        await self.data_parser.retrieve(
+            ctx, category, option)
+
+    async def search(self, ctx, category):
+        await self.data_parser.search(
+            ctx, category)
+
+    async def retrieve_from_search(self, payload, category):
+        await self.data_parser.retrieve_from_search(
+            payload, category)
+
+    async def scroll(self, payload, category):
+        await self.data_parser.scroll(
+            payload, category)
+
+    async def delete_search(self, payload, category):
+        await self.data_parser.delete_search(
+            payload, category)
+    
+
+class MiraHQ(commands.Cog):
+
+    def __init__(self, bot, data):
+        self.bot = bot
+        self.data = data
+        self.name = "MIRA HQ"
+        self.dir = 'mirahq'
+        self.data_parser = ParseData(self.data, self.name, self.dir)
+
+    async def retrieve(self, ctx, category, option):
+        await self.data_parser.retrieve(
+            ctx, category, option)
+
+    async def search(self, ctx, category):
+        await self.data_parser.search(
+            ctx, category)
+
+    async def retrieve_from_search(self, payload, category):
+        await self.data_parser.retrieve_from_search(
+            payload, category)
+
+    async def scroll(self, payload, category):
+        await self.data_parser.scroll(
+            payload, category)
+
+    async def delete_search(self, payload, category):
+        await self.data_parser.delete_search(
+            payload, category)
+
+class Polus(commands.Cog):
+
+    def __init__(self, bot, data):
+        self.bot = bot
+        self.data = data
+        self.name = "Polus"
+        self.dir = 'polus'
+        self.data_parser = ParseData(self.data, self.name, self.dir)
+
+    async def retrieve(self, ctx, category, option):
+        await self.data_parser.retrieve(
+            ctx, category, option)
+
+    async def search(self, ctx, category):
+        await self.data_parser.search(
+            ctx, category)
+
+    async def retrieve_from_search(self, payload, category):
+        await self.data_parser.retrieve_from_search(
+            payload, category)
+
+    async def scroll(self, payload, category):
+        await self.data_parser.scroll(
+            payload, category)
+
+    async def delete_search(self, payload, category):
+        await self.data_parser.delete_search(
+            payload, category)
+
+class TheSkeld(commands.Cog):
+
+    def __init__(self, bot, data):
+        self.bot = bot
+        self.data = data
+        self.name = "The Skeld"
+        self.dir = 'theskeld'
+        self.data_parser = ParseData(self.data, self.name, self.dir)
+
+    async def retrieve(self, ctx, category, option):
+        await self.data_parser.retrieve(
+            ctx, category, option)
+
+    async def search(self, ctx, category):
+        await self.data_parser.search(
+            ctx, category)
+
+    async def retrieve_from_search(self, payload, category):
+        await self.data_parser.retrieve_from_search(
+            payload, category)
+
+    async def scroll(self, payload, category):
+        await self.data_parser.scroll(
+            payload, category)
+
+    async def delete_search(self, payload, category):
+        await self.data_parser.delete_search(
+            payload, category)
+
 class MapBot(commands.Bot):
-    def __init__(self, *, command_prefix, name, directory):
+    def __init__(self, *, prefix, name):
         '''
 '''
-        self.client = discord.Client()
         commands.Bot.__init__(
-            self, command_prefix=command_prefix, self_bot=False)
-        self.name = name
-        self.directory = directory
-        self.data = {}
-        self.scrolling_embeds = {}
+            self, command_prefix=prefix,
+            case_insensitive=True, self_bot=False)
         self.read_files()
+        self.name = name
+        self.add_cog(MiraHQ(self, self.data['mirahq']))
+        self.add_cog(Polus(self, self.data['polus']))
+        self.add_cog(TheSkeld(self, self.data['theskeld']))
+        self.map_cogs = {
+            'mirahq': self.get_cog('MiraHQ'),
+            'polus': self.get_cog('Polus'),
+            'theskeld': self.get_cog('TheSkeld')}
         self.execute_commands()
 
     def read_files(self):
         ''' Read CSV data for each map
 '''
-        dirpath = os.path.join('data', self.directory)
-        directories = [d for d in os.listdir(dirpath)\
-                       if os.path.isdir(os.path.join(dirpath, d))]
-        for direct in directories:
-            csvfile = os.path.join(dirpath, direct, f"{direct}.csv")
-            with open(csvfile) as file:
-                data = list(csv.reader(file))
-                headings = data.pop(0)
-            self.data[direct] = {}
-            for row in data:
-                info = dict(zip(headings, row))
-                self.data[direct].setdefault(
-                    info['Name'], info)
+        self.data = {}
+        for maps in ['airship', 'mirahq', 'polus', 'theskeld']:
+            map_data = {}
+            directory = os.path.join('data', maps)
+            directories = [d for d in os.listdir(directory)\
+                           if os.path.isdir(os.path.join(directory, d))]
+            for direct in directories:
+                csvfile = os.path.join(
+                    directory, direct, f"{direct}.csv")
+                with open(csvfile) as file:
+                    data = list(csv.reader(file))
+                    headings = data.pop(0)
+                map_data[direct] = {}
+                for row in data:
+                    info = dict(zip(headings, row))
+                    map_data[direct].setdefault(info['Name'], info)
+            self.data.setdefault(maps, map_data)
 
     async def on_ready(self):
         ''' Notify developer that a MapBot-class bot is active
@@ -54,98 +234,65 @@ class MapBot(commands.Bot):
         if payload.member.bot:
             return
         name = payload.emoji.name
+        channel = self.get_channel(payload.channel_id)
+        message = await channel.fetch_message(payload.message_id)
+        embed = message.embeds[0]
+        footer_regex = re.compile(r'(.*): Page [0-9]+/[0-9]+')
+        title_regex = re.compile(r'(.*): .*')
+        mapcog = footer_regex.search(embed.footer.text).group(1).lower()
+        cog = self.map_cogs.get(''.join(mapcog.split()))
+        category = title_regex.search(embed.title).group(1).lower()
         if name in [
             u'\u23ee', u'\u23ea', u'\u25c0', u'\u25b6', u'\u23e9',
             u'\u23ed']:
-            embed = self.scrolling_embeds[payload.member.id]
-            await embed.scroll(payload)
+            await cog.scroll(payload, category)
         elif name == u'\u2714':
-            embed = self.scrolling_embeds[payload.member.id]
-            await self.result_embed(
-                embed.channel, embed.message, embed.category, embed.option)
-            del self.scrolling_embeds[payload.member.id]
+            await cog.retrieve_from_search(payload, category)
         elif name == u'\u274c':
-            embed = self.scrolling_embeds[payload.member.id]
-            await embed.message.delete()
-            del self.scrolling_embeds[payload.member.id]
-
-    async def map_information(self, ctx, *, category, option):
-        items = self.data.get(category)
-        option = option.title()
-        data = items.get(option)
-        if data is None:
-            if ctx.message.author.id in self.scrolling_embeds:
-                embed = self.scrolling_embeds[ctx.message.author.id]
-                await embed.message.delete()
-                del self.scrolling_embeds[ctx.message.author.id]
-            embed = ScrollingEmbed(
-                self.directory, ctx.message, self.data,
-                category=category)
-            embed.manage_embed()
-            await embed.send_with_reactions()
-            self.scrolling_embeds[ctx.message.author.id] = embed
-            await ctx.message.delete()
-        else:
-            await self.result_embed(
-                ctx.channel, ctx.message, category, option)
-
-    async def result_embed(self, channel, message, category, option):
-        items = self.data.get(category)
-        option = option.title()
-        data = items.get(option)
-        embed = discord.Embed(
-            title=f"{category.title()}: {option}",
-            color=0x0000ff)
-        for item in data:
-            embed.add_field(name=item, value=data[item])
-        image_name = f"{data['Name']}.png"
-        image_path = os.path.join(
-            'data', self.directory, category, image_name)
-        image = discord.File(image_path, image_name)
-        embed.set_image(url=f"attachment://{image_name}")
-        await channel.send(file=image, embed=embed)
-        await message.delete()
+            await cog.delete_search(payload, category)
 
     def execute_commands(self):
-        ''' MapBot-class commands which can be used by members
-'''
-        @self.command(name="search_actions", pass_context=True,
-                      aliases=["a", "actions"])
-        async def search_actions(ctx, option=''):
-            await self.map_information(
-                ctx, category='actions', option=option)
+        @self.command(name="retrieve", pass_context=True,
+                      aliases=["r"])
+        async def retrieve(ctx, mapname, category, option):
+            mapname = mapname.lower()
+            cog = self.map_cogs.get(mapname)
+            if cog is None:
+                await ctx.send(
+                    f"`{mapname}` is not an active Among Us map")
+                return
+            if self.data[mapname].get(category) is None:
+                await ctx.send(
+                    f"`category={category}` is not valid")
+                return
+            if self.data[mapname][category].get(option) is None:
+                await ctx.send(
+                    f"`option={option}` is not valid")
+                return
+            await cog.retrieve(ctx, category, option)
 
-        @self.command(name="search_locations", pass_context=True,
-                      aliases=["l", "locations"])
-        async def search_locations(ctx, option=''):
-            await self.map_information(
-                ctx, category='locations', option=option)
-
-        @self.command(name="search_tasks", pass_context=True,
-                      aliases=["t", "tasks"])
-        async def search_tasks(ctx, option=''):
-            await self.map_information(
-                ctx, category='tasks', option=option)
-
-        @self.command(name="search_vents", pass_context=True,
-                      aliases=["v", "vents"])
-        async def search_vents(ctx, option=''):
-            await self.map_information(
-                ctx, category='vents', option=option)
-
-        @self.command(name="search_maps", pass_context=True,
-                      aliases=["m", "maps"])
-        async def search_maps(ctx, option=''):
-            await self.map_information(
-                ctx, category='maps', option=option)
+        @self.command(name="search", pass_context=True,
+                      aliases=["s"])
+        async def search(ctx, mapname, category):
+            mapname = mapname.lower()
+            cog = self.map_cogs.get(mapname)
+            if cog is None:
+                await ctx.send(
+                    f"`{mapname}` is not an active Among Us map")
+                return
+            if self.data[mapname].get(category) is None:
+                await ctx.send(
+                    f"`category={category}` is not valid")
+                return
+            await cog.search(ctx, category)
 
 class ScrollingEmbed:
-    def __init__(self, directory, message, data, category):
+    def __init__(self, message, data, category, name):
         self.channel = message.channel
         self.memberid = message.author.id
-        self.directory = directory
         self.category = category
         self.items = data.get(self.category)
+        self.name = name
 
     def manage_embed(self, index=0):
         self.option = list(self.items)[index]
@@ -154,7 +301,7 @@ class ScrollingEmbed:
             title=f"{self.category.title()}: {self.option}",
             color=0x0000ff)
         self.embed.set_footer(
-            text=f"Page {index+1}/{len(self.items)}")
+            text=f"{self.name}: Page {index+1}/{len(self.items)}")
         for item in self.data:
             self.embed.add_field(name=item, value=self.data[item])
 
@@ -179,27 +326,19 @@ class ScrollingEmbed:
         self.manage_embed(index=index)
         await self.message.edit(embed=self.embed)
         await self.message.remove_reaction(payload.emoji, payload.member)
-        
-class Main:
-    def __init__(self):
-        ''' Create and run MapBot-class bots for each Among Us map
-'''
-        self.bots = {
-            'MIRA HQ': os.environ.get('MIRAHQ', None),
-            'Polus': os.environ.get('POLUS', None),
-            'The Skeld': os.environ.get('THESKELD', None),
-            'Airship': os.environ.get('AIRSHIP', None)}
-        if None in self.bots.values():
-            with open(os.path.join('data', 'tokens.csv')) as file:
-                self.bots = dict(list(csv.reader(file, delimiter='\t')))
-        self.loop = asyncio.get_event_loop()
-        for bot in self.bots:
-            directory = ''.join(bot.split())
-            prefix, token = f"{directory}.", self.bots[bot]
-            discord_bot = MapBot(
-                command_prefix=prefix, name=bot, directory=directory)
-            self.loop.create_task(discord_bot.start(token))
-        self.loop.run_forever()
+
+def main():
+    token = os.environ.get("THESKELD", None)
+    if token is None:
+        with open(os.path.join('data', 'tokens.csv')) as file:
+            bot_tokens = dict(list(csv.reader(file, delimiter='\t')))
+            token = bot_tokens.get("The Skeld", None)
+    assert token is not None
+    loop = asyncio.get_event_loop()
+    discord_bot = MapBot(
+        prefix="#", name="AmongUs Maps")
+    loop.create_task(discord_bot.start(token))
+    loop.run_forever()
 
 if __name__ == '__main__':
-    Main()
+    main()
