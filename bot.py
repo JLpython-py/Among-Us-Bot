@@ -128,7 +128,7 @@ class MapBot(commands.Bot):
         ''' Read CSV data for each map
 '''
         self.data = {}
-        for maps in ['airship', 'mirahq', 'polus', 'theskeld']:
+        for maps in ['mirahq', 'polus', 'theskeld']:
             map_data = {}
             directory = os.path.join('data', maps)
             directories = [d for d in os.listdir(directory)\
