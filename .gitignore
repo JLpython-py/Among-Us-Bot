@@ -1,5 +1,5 @@
 amongus-map
 amongus-mapbot
 virtualenv/
-data/tokens.csv
 data/Airship/
+data/token.txt

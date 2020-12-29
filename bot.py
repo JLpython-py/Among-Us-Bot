@@ -63,7 +63,7 @@ class ParseData:
     async def scroll(self, payload, category):
         embed = self.searches[category].get(payload.member.id)
         await embed.scroll(payload)
-        
+
     async def delete_search(self, payload, category):
         embed = self.searches[category].get(payload.member.id)
         await embed.message.delete()
@@ -78,27 +78,6 @@ class Airship(commands.Cog):
         self.dir = 'airship'
         self.data_parser = ParseData(self.data, self.name, self.dir)
 
-    async def retrieve(self, ctx, category, option):
-        await self.data_parser.retrieve(
-            ctx, category, option)
-
-    async def search(self, ctx, category):
-        await self.data_parser.search(
-            ctx, category)
-
-    async def retrieve_from_search(self, payload, category):
-        await self.data_parser.retrieve_from_search(
-            payload, category)
-
-    async def scroll(self, payload, category):
-        await self.data_parser.scroll(
-            payload, category)
-
-    async def delete_search(self, payload, category):
-        await self.data_parser.delete_search(
-            payload, category)
-    
-
 class MiraHQ(commands.Cog):
 
     def __init__(self, bot, data):
@@ -107,26 +86,6 @@ class MiraHQ(commands.Cog):
         self.name = "MIRA HQ"
         self.dir = 'mirahq'
         self.data_parser = ParseData(self.data, self.name, self.dir)
-
-    async def retrieve(self, ctx, category, option):
-        await self.data_parser.retrieve(
-            ctx, category, option)
-
-    async def search(self, ctx, category):
-        await self.data_parser.search(
-            ctx, category)
-
-    async def retrieve_from_search(self, payload, category):
-        await self.data_parser.retrieve_from_search(
-            payload, category)
-
-    async def scroll(self, payload, category):
-        await self.data_parser.scroll(
-            payload, category)
-
-    async def delete_search(self, payload, category):
-        await self.data_parser.delete_search(
-            payload, category)
 
 class Polus(commands.Cog):
 
@@ -137,26 +96,6 @@ class Polus(commands.Cog):
         self.dir = 'polus'
         self.data_parser = ParseData(self.data, self.name, self.dir)
 
-    async def retrieve(self, ctx, category, option):
-        await self.data_parser.retrieve(
-            ctx, category, option)
-
-    async def search(self, ctx, category):
-        await self.data_parser.search(
-            ctx, category)
-
-    async def retrieve_from_search(self, payload, category):
-        await self.data_parser.retrieve_from_search(
-            payload, category)
-
-    async def scroll(self, payload, category):
-        await self.data_parser.scroll(
-            payload, category)
-
-    async def delete_search(self, payload, category):
-        await self.data_parser.delete_search(
-            payload, category)
-
 class TheSkeld(commands.Cog):
 
     def __init__(self, bot, data):
@@ -164,27 +103,8 @@ class TheSkeld(commands.Cog):
         self.data = data
         self.name = "The Skeld"
         self.dir = 'theskeld'
-        self.data_parser = ParseData(self.data, self.name, self.dir)
-
-    async def retrieve(self, ctx, category, option):
-        await self.data_parser.retrieve(
-            ctx, category, option)
-
-    async def search(self, ctx, category):
-        await self.data_parser.search(
-            ctx, category)
-
-    async def retrieve_from_search(self, payload, category):
-        await self.data_parser.retrieve_from_search(
-            payload, category)
-
-    async def scroll(self, payload, category):
-        await self.data_parser.scroll(
-            payload, category)
-
-    async def delete_search(self, payload, category):
-        await self.data_parser.delete_search(
-            payload, category)
+        self.data_parser = ParseData(
+            self.data, self.name, self.dir)
 
 class MapBot(commands.Bot):
     def __init__(self, *, prefix, name):
@@ -245,11 +165,11 @@ class MapBot(commands.Bot):
         if name in [
             u'\u23ee', u'\u23ea', u'\u25c0', u'\u25b6', u'\u23e9',
             u'\u23ed']:
-            await cog.scroll(payload, category)
+            await cog.data_parser.scroll(payload, category)
         elif name == u'\u2714':
-            await cog.retrieve_from_search(payload, category)
+            await cog.data_parser.retrieve_from_search(payload, category)
         elif name == u'\u274c':
-            await cog.delete_search(payload, category)
+            await cog.data_parser.delete_search(payload, category)
 
     def execute_commands(self):
         @self.command(name="retrieve", pass_context=True,
@@ -269,7 +189,7 @@ class MapBot(commands.Bot):
                 await ctx.send(
                     f"`option={option}` is not valid")
                 return
-            await cog.retrieve(ctx, category, option)
+            await cog.data_parser.retrieve(ctx, category, option)
 
         @self.command(name="search", pass_context=True,
                       aliases=["s"])
@@ -284,7 +204,7 @@ class MapBot(commands.Bot):
                 await ctx.send(
                     f"`category={category}` is not valid")
                 return
-            await cog.search(ctx, category)
+            await cog.data_parser.search(ctx, category)
 
 class ScrollingEmbed:
     def __init__(self, message, data, category, name):
@@ -328,15 +248,14 @@ class ScrollingEmbed:
         await self.message.remove_reaction(payload.emoji, payload.member)
 
 def main():
-    token = os.environ.get("THESKELD", None)
+    token = os.environ.get("token", None)
     if token is None:
-        with open(os.path.join('data', 'tokens.csv')) as file:
-            bot_tokens = dict(list(csv.reader(file, delimiter='\t')))
-            token = bot_tokens.get("The Skeld", None)
+        with open(os.path.join('data', 'token.txt')) as file:
+            token = file.read()
     assert token is not None
     loop = asyncio.get_event_loop()
     discord_bot = MapBot(
-        prefix="#", name="AmongUs Maps")
+        prefix="+", name="AmongUs MapBot")
     loop.create_task(discord_bot.start(token))
     loop.run_forever()
 
