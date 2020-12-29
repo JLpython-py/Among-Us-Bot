@@ -3,6 +3,7 @@
 
 import asyncio
 import csv
+import json
 import logging
 import re
 import os
@@ -58,6 +59,11 @@ class MapBot(commands.Bot):
             u'\u23ed']:
             embed = self.scrolling_embeds[payload.member.id]
             await embed.scroll(payload)
+        elif name == u'\u2714':
+            embed = self.scrolling_embeds[payload.member.id]
+            await self.result_embed(
+                embed.channel, embed.message, embed.category, embed.option)
+            del self.scrolling_embeds[payload.member.id]
         elif name == u'\u274c':
             embed = self.scrolling_embeds[payload.member.id]
             await embed.message.delete()
@@ -68,56 +74,68 @@ class MapBot(commands.Bot):
         option = option.title()
         data = items.get(option)
         if data is None:
+            if ctx.message.author.id in self.scrolling_embeds:
+                embed = self.scrolling_embeds[ctx.message.author.id]
+                await embed.message.delete()
+                del self.scrolling_embeds[ctx.message.author.id]
             embed = ScrollingEmbed(
                 self.directory, ctx.message, self.data,
                 category=category)
             embed.manage_embed()
             await embed.send_with_reactions()
-            if ctx.message.author.id in self.scrolling_embeds:
-                embed = self.scrolling_embeds[ctx.message.author.id]
-                await embed.message.delete()
-                del self.scrolling_embeds[ctx.message.author.id]
             self.scrolling_embeds[ctx.message.author.id] = embed
             await ctx.message.delete()
         else:
-            embed = discord.Embed(
-                title=f"{category.title()}: {option}",
-                color=0x0000ff)
-            for item in data:
-                embed.add_field(name=item, value=data[item])
-            image_name = f"{data['Name']}.png"
-            image_path = os.path.join(
-                'data', self.directory, category, image_name)
-            image = discord.File(image_path, image_name)
-            embed.set_image(url=f"attachment://{image_name}")
-            await ctx.send(file=image, embed=embed)
-            await ctx.message.delete()
+            await self.result_embed(
+                ctx.channel, ctx.message, category, option)
+
+    async def result_embed(self, channel, message, category, option):
+        items = self.data.get(category)
+        option = option.title()
+        data = items.get(option)
+        embed = discord.Embed(
+            title=f"{category.title()}: {option}",
+            color=0x0000ff)
+        for item in data:
+            embed.add_field(name=item, value=data[item])
+        image_name = f"{data['Name']}.png"
+        image_path = os.path.join(
+            'data', self.directory, category, image_name)
+        image = discord.File(image_path, image_name)
+        embed.set_image(url=f"attachment://{image_name}")
+        await channel.send(file=image, embed=embed)
+        await message.delete()
 
     def execute_commands(self):
         ''' MapBot-class commands which can be used by members
 '''
-        @self.command(name="actions", pass_context=True, aliases=["a"])
-        async def actions(ctx, option=''):
+        @self.command(name="search_actions", pass_context=True,
+                      aliases=["a", "actions"])
+        async def search_actions(ctx, option=''):
             await self.map_information(
                 ctx, category='actions', option=option)
 
-        @self.command(name="locations", pass_context=True, aliases=["l"])
-        async def locations(ctx, option=''):
+        @self.command(name="search_locations", pass_context=True,
+                      aliases=["l", "locations"])
+        async def search_locations(ctx, option=''):
             await self.map_information(
                 ctx, category='locations', option=option)
 
-        @self.command(name="tasks", pass_context=True, aliases=["t"])
-        async def tasks(ctx, option=''):
+        @self.command(name="search_tasks", pass_context=True,
+                      aliases=["t", "tasks"])
+        async def search_tasks(ctx, option=''):
             await self.map_information(
                 ctx, category='tasks', option=option)
 
-        @self.command(name="vents", pass_context=True, aliases=["v"])
-        async def vents(ctx, option=''):
+        @self.command(name="search_vents", pass_context=True,
+                      aliases=["v", "vents"])
+        async def search_vents(ctx, option=''):
             await self.map_information(
                 ctx, category='vents', option=option)
 
-        @self.command(name="maps", pass_context=True, aliases=["m"])
-        async def maps(ctx, option=''):
+        @self.command(name="search_maps", pass_context=True,
+                      aliases=["m", "maps"])
+        async def search_maps(ctx, option=''):
             await self.map_information(
                 ctx, category='maps', option=option)
 
@@ -139,18 +157,12 @@ class ScrollingEmbed:
             text=f"Page {index+1}/{len(self.items)}")
         for item in self.data:
             self.embed.add_field(name=item, value=self.data[item])
-        image_name = f"{self.data['Name']}.png"
-        image_path = os.path.join(
-            'data', self.directory, self.category, image_name)
-        self.image = discord.File(image_path, image_name)
-        self.embed.set_image(url=f"attachment://{image_name}")
 
     async def send_with_reactions(self):
-        self.message = await self.channel.send(
-            file=self.image, embed=self.embed)
+        self.message = await self.channel.send(embed=self.embed)
         reactions = [
             u'\u23ee', u'\u23ea', u'\u25c0', u'\u25b6', u'\u23e9', u'\u23ed',
-            u'\u274c']
+            u'\u2714', u'\u274c']
         for rxn in reactions:
             await self.message.add_reaction(rxn)
 
