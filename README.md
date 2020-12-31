@@ -47,14 +47,13 @@ All the commands are case-insensitive. Currently there are two commands availabl
 
 <h5>Arguments</h5>
 
-![retrieve command w/ mapname=Polus category=locations option="Admin"](https://user-images.githubusercontent.com/72679601/103320919-19ddae00-49ec-11eb-9920-095b7da9526f.png)
-
  - `<mapname>`: The name of the map, condensed into one word, case-insensitive. Since there are only three maps, the possible values for this parameter are `MiraHQ`, `Polus`, or `TheSkeld`.
  - `<category>`: The category which the argument `<option>` belongs to, case-insensitive. Currently, the available values for this parameter are `actions`, `locations`, `maps`, `tasks`, or `vents`.
  - `<option>`: The name of the item which is being retrieved, case-insensitive. The available values for this parameter varies based on the `<category>` argument. Since many of the possible values for this argument contain multiple words, it is recommended that the option is surrounded by double quotes ("), for example `"Option Parameter"` as opposed to `Option Parameters`.
  
 <h5>Return Values</h5> 
 
+![retrieve command w/ mapname=Polus category=locations option="Admin"](https://user-images.githubusercontent.com/72679601/103320919-19ddae00-49ec-11eb-9920-095b7da9526f.png)
 ![retrieve command response w/ mapname=Polus category=locations option="Admin"](https://user-images.githubusercontent.com/72679601/103320920-1a764480-49ec-11eb-9142-c40bbcdeced6.png)
 
 This command returns an embed with an image and information which correspond to the `<option>` argument. Once this command is called, the message the member sent which called the command is deleted, in order to limit the number of message sent in a channel.
@@ -68,13 +67,12 @@ This command returns an embed with an image and information which correspond to 
 
 <h5>Arguments</h5>
 
-![search command w/ mapname=TheSkeld category=actions](https://user-images.githubusercontent.com/72679601/103317104-5e168180-49df-11eb-8899-7a4cafb9698c.png)
-
  - `<mapname>`: The name of the map, condensed into one word, case-insensitive. Since there are only three maps, the possible values for this parameter are `MiraHQ`, `Polus`, or `TheSkeld`.
  - `<category>`: The category which the argument `<option>` belongs to, case-insensitive. Currently, the available values for this parameter are `actions`, `locations`, `maps`, `tasks`, or `vents`.
  
 <h5>Return Values</h5>
 
+![search command w/ mapname=TheSkeld category=actions](https://user-images.githubusercontent.com/72679601/103317104-5e168180-49df-11eb-8899-7a4cafb9698c.png)
 ![search command response w/ mapname=TheSkeld category=actions](https://user-images.githubusercontent.com/72679601/103317103-5e168180-49df-11eb-8951-80d784aae0c5.png)
 
 This command returns an embed with an image of the logo of the map and the basic description items of the option. The message is also reacted with eight emojis which the member can use to scroll along the list. Note that the scrolling wraps, i.e. scrolling backwards from the first page will scroll to the last page and scrolling forwards from the last page will scroll to the first page. Once this command is called, the message the member sent which called the command is deleted, in order to limit the number of messages in a channel. This command only allows the member who originally send the `search` command to scroll with the emojis. Other members who attempt to scroll with the emojis will be ignored, and their reaction removed. A member can only have one of these embeds open at a time, i.e. calling this command, then calling it again will delete the first message. The only exception to this is if the member reacts with the ✔ emoji.
