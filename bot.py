@@ -69,6 +69,22 @@ class ParseData:
         await embed.message.delete()
         del self.searches[category][payload.member.id]
 
+    async def listopts(self, ctx, category):
+        items = self.data.get(category)
+        embed = discord.Embed(
+            title=category.title(), color=0xff0000)
+        for item in items:
+            data = '\n'.join([
+                f"`{k}`: {v[:20]}..." for k, v in items[item].items()])
+            embed.add_field(name=item, value=data)
+        embed.set_footer(text=self.name)
+        image_name = f"{self.dir}.png"
+        image_path = os.path.join('data', image_name)
+        image = discord.File(image_path, image_name)
+        embed.set_image(url=f"attachment://{image_name}")
+        await ctx.channel.send(file=image, embed=embed)
+        await ctx.message.delete()
+
 class Airship(commands.Cog):
 
     def __init__(self, bot, data):
@@ -172,8 +188,7 @@ class MapBot(commands.Bot):
             await cog.data_parser.delete_search(payload, category)
 
     def execute_commands(self):
-        @self.command(name="retrieve", pass_context=True,
-                      aliases=["r"])
+        @self.command(name="retrieve", pass_context=True, aliases=["r"])
         async def retrieve(ctx, mapname, category, option):
             ''' [Embed] Returns data about the given option on the map
                 <mapname>: MiraHQ, TheSkeld, Polus
@@ -196,8 +211,7 @@ class MapBot(commands.Bot):
                 return
             await cog.data_parser.retrieve(ctx, category, option)
 
-        @self.command(name="search", pass_context=True,
-                      aliases=["s"])
+        @self.command(name="search", pass_context=True, aliases=["s"])
         async def search(ctx, mapname, category):
             ''' [Embed] Used to browse through the options for a category
                 Use the button reactions to scroll through the options
@@ -217,6 +231,24 @@ class MapBot(commands.Bot):
                     f"`category={category}` is not valid")
                 return
             await cog.data_parser.search(ctx, category)
+
+        @self.command(name="listopts", pass_context=True, aliases=["l"])
+        async def listopts(ctx, mapname, category):
+            ''' [Embed] Used to list all the available options for a category
+                <mapname>: MiraHQ, TheSkeld, Polus
+                <category>: actions, locations, tasks, maps, vents
+'''
+            mapname = mapname.lower()
+            cog = self.map_cogs.get(mapname)
+            if cog is None:
+                await ctx.send(
+                    f"`{mapname}` is not an active Among Us map")
+                return
+            if self.data[mapname].get(category) is None:
+                await ctx.send(
+                    f"`category={category}` is not valid")
+                return
+            await cog.data_parser.listopts(ctx, category)
 
 class ScrollingEmbed:
     def __init__(self, directory, message, data, category, name):
