@@ -5,6 +5,7 @@ import asyncio
 import csv
 import json
 import logging
+import random
 import re
 import os
 
@@ -138,6 +139,8 @@ class MapBot(commands.Bot):
             'mirahq': self.get_cog('MiraHQ'),
             'polus': self.get_cog('Polus'),
             'theskeld': self.get_cog('TheSkeld')}
+        with open(os.path.join('data', 'settings.txt')) as file:
+            self.settings = json.load(file)
         self.execute_commands()
 
     def read_files(self):
@@ -250,14 +253,26 @@ class MapBot(commands.Bot):
                 return
             await cog.data_parser.listopts(ctx, category)
 
-        @self.command(name="randomize", pass_context=True, aliases=["r"])
-        async def randomize(ctx, setting=''):
+        @self.command(name="random_setting", pass_context=True, aliases=["rs"])
+        async def random_setting(ctx, setting=''):
             ''' Generate random option for specified setting
                 <setting>: *Any in-lobby setting
                 Leaving <setting> blank will randomize all settings
 '''
-            pass
-            
+            setting = setting.title()
+            setting_options = self.settings.get(setting)
+            fields = {}
+            if setting_options is None:
+                title = "Randomize: ALL"
+                for opt in self.settings:
+                    fields.setdefault(opt, random.choice(self.settings[opt]))
+            else:
+                title = f"Randomize: {setting}"
+                fields.setdefault(setting, random.choice(self.settings[setting]))
+            embed = discord.Embed(title=title, color=0xff0000)
+            for field in fields:
+                embed.add_field(name=field, value=fields[field])
+            await ctx.send(embed=embed)
 
 class ScrollingEmbed:
     def __init__(self, directory, message, data, category, name):
