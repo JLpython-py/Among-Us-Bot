@@ -250,6 +250,15 @@ class MapBot(commands.Bot):
                 return
             await cog.data_parser.listopts(ctx, category)
 
+        @self.command(name="randomize", pass_context=True, aliases=["r"])
+        async def randomize(ctx, setting=''):
+            ''' Generate random option for specified setting
+                <setting>: *Any in-lobby setting
+                Leaving <setting> blank will randomize all settings
+'''
+            pass
+            
+
 class ScrollingEmbed:
     def __init__(self, directory, message, data, category, name):
         self.dir = directory
@@ -300,7 +309,7 @@ class ScrollingEmbed:
 def main():
     token = os.environ.get("token", None)
     if token is None:
-        with open(os.path.join('data', 'token.txt')) as file:
+        with open('token.txt') as file:
             token = file.read()
     assert token is not None
     loop = asyncio.get_event_loop()
