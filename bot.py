@@ -123,6 +123,34 @@ class TheSkeld(commands.Cog):
         self.data_parser = ParseData(
             self.data, self.name, self.dir)
 
+class RandomAmongUs(commands.Cog):
+
+    def __init__(self, bot):
+        self.bot = bot
+        with open(os.path.join('data', 'settings.txt')) as file:
+            self.settings = json.load(file)
+
+    @commands.command(name="randsettings", pass_context=True, aliases=["rs"])
+    async def randsettings(self, ctx, setting=''):
+        ''' Generate random option for specified setting
+            <setting> - any of the settings which can be modified in-lobby
+            Leaving <setting> blank will randomize all settings
+'''
+        setting = setting.title()
+        options = self.settings.get(setting)
+        fields = {}
+        if options is None:
+            title = "Randomize: ALL"
+            for opt in self.settings:
+                fields.setdefault(opt, random.choice(self.settings[opt]))
+        else:
+            title = f"Randomize: {setting}"
+            fields.setdefault(setting, random.choice(self.settings[setting]))
+        embed = discord.Embed(title=title, color=0xff0000)
+        for field in fields:
+            embed.add_field(name=field, value=fields[field])
+        await ctx.send(embed=embed)
+
 class MapBot(commands.Bot):
     def __init__(self, *, prefix, name):
         '''
@@ -135,12 +163,11 @@ class MapBot(commands.Bot):
         self.add_cog(MiraHQ(self, self.data['mirahq']))
         self.add_cog(Polus(self, self.data['polus']))
         self.add_cog(TheSkeld(self, self.data['theskeld']))
+        self.add_cog(RandomAmongUs(self))
         self.map_cogs = {
             'mirahq': self.get_cog('MiraHQ'),
             'polus': self.get_cog('Polus'),
             'theskeld': self.get_cog('TheSkeld')}
-        with open(os.path.join('data', 'settings.txt')) as file:
-            self.settings = json.load(file)
         self.execute_commands()
 
     def read_files(self):
@@ -252,27 +279,6 @@ class MapBot(commands.Bot):
                     f"`category={category}` is not valid")
                 return
             await cog.data_parser.listopts(ctx, category)
-
-        @self.command(name="random_setting", pass_context=True, aliases=["rs"])
-        async def random_setting(ctx, setting=''):
-            ''' Generate random option for specified setting
-                <setting>: *Any in-lobby setting
-                Leaving <setting> blank will randomize all settings
-'''
-            setting = setting.title()
-            setting_options = self.settings.get(setting)
-            fields = {}
-            if setting_options is None:
-                title = "Randomize: ALL"
-                for opt in self.settings:
-                    fields.setdefault(opt, random.choice(self.settings[opt]))
-            else:
-                title = f"Randomize: {setting}"
-                fields.setdefault(setting, random.choice(self.settings[setting]))
-            embed = discord.Embed(title=title, color=0xff0000)
-            for field in fields:
-                embed.add_field(name=field, value=fields[field])
-            await ctx.send(embed=embed)
 
 class ScrollingEmbed:
     def __init__(self, directory, message, data, category, name):
