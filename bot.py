@@ -162,6 +162,20 @@ class MapInfo(commands.Cog):
             "TheSkeld": ParseData("The Skeld", self.data)}
         self.searches = {}
 
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload):
+        if payload.member.bot:
+            return
+        if payload.emoji.name in [
+            u'\u23ee', u'\u23ea', u'\u25c0', u'\u25b6', u'\u23e9', u'\u23ed']:
+            await self.scroll(payload)
+        elif payload.emoji.name == u'\u2714':
+            await self.retrieve_from_search(payload)
+        elif payload.emoji.name == u'\u274c':
+            await self.delete_search(payload)
+        else:
+            await message.remove_reaction(payload.emoji, payload.member)
+
     @commands.group(name="MIRAHQ", case_insensitive=True, pass_context=True)
     async def MIRAHQ(self, ctx):
         if ctx.invoked_subcommand is None:
@@ -273,12 +287,54 @@ class MapInfo(commands.Cog):
                 f"`{k}`: {v[:20]}..." for k, v in data[item].items()])
             embed.add_field(name=item, value=text)
         embed.set_footer(text=ctx.command.full_parent_name)
-        image_name = f"{mapname}.png"
+        image_name = f"{ctx.command.full_parent_name}.png"
         image_path = os.path.join('data', image_name)
         image = discord.File(image_path, image_name)
         embed.set_image(url=f"attachment://{image_name}")
         await ctx.channel.send(file=image, embed=embed)
         await ctx.message.delete()
+
+    async def retrieve_from_search(self, payload):
+        #Get embed from payload
+        channel = self.bot.get_channel(payload.channel_id)
+        message = await channel.fetch_message(payload.message_id)
+        msg_embed = message.embeds[0]
+        #Get map and category from embed
+        commands = [c.name for c in self.get_commands()]
+        footer_regex = re.compile(
+            fr"({'|'.join(commands)}): Page [0-9]+/[0-9]+")
+        mapname = footer_regex.search(
+            msg_embed.footer.text).group(1).lower()
+        title_regex = re.compile(
+            f"(.*): .*")
+        category = title_regex.search(
+            msg_embed.title).group(1).lower()
+        embed = self.searches.get(payload.member.id)
+        option = embed.option
+        data = self.data[mapname][category][option]
+        embed = discord.Embed(
+            title=f"{category.title()}: {option.title()}",
+            color=0x0000ff)
+        for item in data:
+            embed.add_field(name=item, value=data[item])
+        embed.set_footer(text=msg_embed.footer.text)
+        image_name = f"{data['Name']}.png"
+        image_path = os.path.join(
+            'data', mapname, category, image_name)
+        image = discord.File(image_path, image_name)
+        embed.set_image(url=f"attachment://{image_name}")
+        await channel.send(file=image, embed=embed)
+        await message.delete()
+        del self.searches[payload.member.id]
+
+    async def scroll(self, payload):
+        embed = self.searches.get(payload.member.id)
+        await embed.scroll(payload)
+
+    async def delete_search(self, payload):
+        embed = self.searches.get(payload.member.id)
+        await embed.message.delete()
+        del self.searches[payload.member.id]
 
 class MapBot(commands.Bot):
     def __init__(self, *, prefix, name):
@@ -326,7 +382,7 @@ class MapBot(commands.Bot):
 '''
         logging.info("Ready: %s", self.name)
 
-    async def on_raw_reaction_add(self, payload):
+    '''async def on_raw_reaction_add(self, payload):
         if payload.member.bot:
             return
         name = payload.emoji.name
@@ -345,7 +401,7 @@ class MapBot(commands.Bot):
         elif name == u'\u2714':
             await cog.data_parser.retrieve_from_search(payload, category)
         elif name == u'\u274c':
-            await cog.data_parser.delete_search(payload, category)
+            await cog.data_parser.delete_search(payload, category)'''
 
     def execute_commands(self):
         @self.command(name="retrieve", pass_context=True, aliases=["r"])
