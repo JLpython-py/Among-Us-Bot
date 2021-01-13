@@ -16,10 +16,10 @@ logging.basicConfig(
     level=logging.INFO, format=' %(asctime)s - %(levelname)s - %(message)s')
 
 class ParseData:
-    def __init__(self, data, name, directory):
-        self.data = data
+    def __init__(self, name, data):
         self.name = name
-        self.dir = directory
+        self.dir = ''.join(self.name.split()).lower()
+        self.data = data.get(self.dir)
         self.searches = {
             "actions": {}, "locations": {}, "maps": {}, "tasks": {},
             "vents": {}}
@@ -151,6 +151,67 @@ class RandomAmongUs(commands.Cog):
             embed.add_field(name=field, value=fields[field])
         await ctx.send(embed=embed)
 
+class MapInfo(commands.Cog):
+
+    def __init__(self, bot, data):
+        self.bot = bot
+        self.data = data
+        self.parsers = {
+            "MIRAHQ": ParseData("MIRA HQ", self.data),
+            "Polus": ParseData("Polus", self.data),
+            "TheSkeld": ParseData("The Skeld", self.data)}
+
+    @commands.group(name="MIRAHQ", case_insensitive=True, pass_context=True)
+    async def MIRAHQ(self, ctx):
+        if ctx.invoked_subcommand is None:
+            await ctx.send("Invalid MIRA HQ command passed")
+
+    @commands.group(name="Polus", case_insensitive=True, pass_context=True)
+    async def Polus(self, ctx):
+        if ctx.invoked_subcommand is None:
+            await ctx.send("Invalid Polus command passed")
+
+    @commands.group(name="TheSkeld", case_insensitive=True, pass_context=True)
+    async def TheSkeld(self, ctx):
+       if ctx.invoked_subcommand is None:
+            await ctx.send("Invalid The Skeld command passed")
+
+    @MIRAHQ.group(name="retrieve", pass_context=True, aliases=["r"])
+    async def mirahq_retrieve(self, ctx, category, option):
+        await self.retrieve(ctx, category, option)
+
+    @Polus.group(name="retrieve", pass_context=True, aliases=["r"])
+    async def polus_retrieve(self, ctx, category, option):
+        await self.retrieve(ctx, category, option)
+
+    @TheSkeld.group(name="retrieve", pass_context=True, aliases=["r"])
+    async def theskeld_retrieve(self, ctx, category, option):
+        await self.retrieve(ctx, category, option)
+
+    async def retrieve(self, ctx, category, option):
+        mapname = ctx.command.full_parent_name.lower()
+        data = self.data.get(mapname)
+        if category not in data:
+            await ctx.send(f"`category={category}` is not valid")
+            return
+        elif option not in data[category]:
+            await ctx.send(f"`option={option}` is not valid")
+            return
+        data = self.data[mapname][category][option]
+        embed = discord.Embed(
+            title=f"{category.title()}: {option.title()}",
+            color=0x0000ff)
+        for item in data:
+            embed.add_field(name=item, value=data[item])
+        embed.set_footer(text=ctx.command.full_parent_name)
+        image_name = f"{data['Name']}.png"
+        image_path = os.path.join(
+            'data', mapname.lower(), category, image_name)
+        image = discord.File(image_path, image_name)
+        embed.set_image(url=f"attachment://{image_name}")
+        await ctx.channel.send(file=image, embed=embed)
+        await ctx.message.delete()
+
 class MapBot(commands.Bot):
     def __init__(self, *, prefix, name):
         '''
@@ -160,9 +221,10 @@ class MapBot(commands.Bot):
             case_insensitive=True, self_bot=False)
         self.read_files()
         self.name = name
-        self.add_cog(MiraHQ(self, self.data['mirahq']))
-        self.add_cog(Polus(self, self.data['polus']))
-        self.add_cog(TheSkeld(self, self.data['theskeld']))
+        #self.add_cog(MiraHQ(self, self.data['mirahq']))
+        #self.add_cog(Polus(self, self.data['polus']))
+        #self.add_cog(TheSkeld(self, self.data['theskeld']))
+        self.add_cog(MapInfo(self, self.data))
         self.add_cog(RandomAmongUs(self))
         self.map_cogs = {
             'mirahq': self.get_cog('MiraHQ'),
