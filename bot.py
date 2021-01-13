@@ -175,6 +175,10 @@ class MapInfo(commands.Cog):
     async def mirahq_search(self, ctx, category):
         await self.search(ctx, category)
 
+    @MIRAHQ.group(name="listopts", pass_context=True, aliases=["ls"])
+    async def mirahq_listopts(self, ctx, category):
+        await self.listopts(ctx, category)
+
     @commands.group(name="Polus", case_insensitive=True, pass_context=True)
     async def Polus(self, ctx):
         if ctx.invoked_subcommand is None:
@@ -187,6 +191,10 @@ class MapInfo(commands.Cog):
     @Polus.group(name="search", pass_context=True, aliases=["s"])
     async def polus_search(self, ctx, category):
         await self.search(ctx, category)
+
+    @Polus.group(name="listopts", pass_context=True, aliases=["ls"])
+    async def polus_listopts(self, ctx, category):
+        await self.listopts(ctx, category)
 
     @commands.group(name="TheSkeld", case_insensitive=True, pass_context=True)
     async def TheSkeld(self, ctx):
@@ -201,17 +209,21 @@ class MapInfo(commands.Cog):
     async def theskeld_search(self, ctx, category):
         await self.search(ctx, category)
 
+    @TheSkeld.group(name="listopts", pass_context=True, aliases=["ls"])
+    async def theskeld_listopts(self, ctx, category):
+        await self.listopts(ctx, category)
+
     async def retrieve(self, ctx, category, option):
         category, option = category.lower(), option.lower()
         mapname = ctx.command.full_parent_name.lower()
-        data = self.data.get(mapname)
-        if category not in data:
+        mapdata = self.data.get(mapname)
+        if category not in mapdata:
             await ctx.send(f"`category={category}` is not valid")
             return
-        elif option not in data[category]:
+        elif option not in mapdata[category]:
             await ctx.send(f"`option={option}` is not valid")
             return
-        data = self.data[mapname][category][option]
+        data = self.mapdata[category][option]
         embed = discord.Embed(
             title=f"{category.title()}: {option.title()}",
             color=0x0000ff)
@@ -229,11 +241,11 @@ class MapInfo(commands.Cog):
     async def search(self, ctx, category):
         category = category.lower()
         mapname = ctx.command.full_parent_name.lower()
-        data = self.data.get(mapname)
-        if category not in data:
+        mapdata = self.data.get(mapname)
+        if category not in mapdata:
             await ctx.send(f"`category={category}` is not valid")
             return
-        data = self.data[mapname][category]
+        data = mapdata[category]
         if ctx.author.id in self.searches:
             embed = self.searches[ctx.author.id]
             await embed.message.delete()
@@ -244,6 +256,28 @@ class MapInfo(commands.Cog):
         embed.manage_embed()
         await embed.send_with_reactions()
         self.searches.setdefault(ctx.author.id, embed)
+        await ctx.message.delete()
+
+    async def listopts(self, ctx, category):
+        category = category.lower()
+        mapname = ctx.command.full_parent_name.lower()
+        mapdata = self.data.get(mapname)
+        if category not in mapdata:
+            await ctx.send(f"`category={category}` is not valid")
+            return
+        data = mapdata[category]
+        embed = discord.Embed(
+            title=category.title(), color=0xff0000)
+        for item in data:
+            text = '\n'.join([
+                f"`{k}`: {v[:20]}..." for k, v in data[item].items()])
+            embed.add_field(name=item, value=text)
+        embed.set_footer(text=ctx.command.full_parent_name)
+        image_name = f"{mapname}.png"
+        image_path = os.path.join('data', image_name)
+        image = discord.File(image_path, image_name)
+        embed.set_image(url=f"attachment://{image_name}")
+        await ctx.channel.send(file=image, embed=embed)
         await ctx.message.delete()
 
 class MapBot(commands.Bot):
