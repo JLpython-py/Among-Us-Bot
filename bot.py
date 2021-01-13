@@ -160,35 +160,49 @@ class MapInfo(commands.Cog):
             "MIRAHQ": ParseData("MIRA HQ", self.data),
             "Polus": ParseData("Polus", self.data),
             "TheSkeld": ParseData("The Skeld", self.data)}
+        self.searches = {}
 
     @commands.group(name="MIRAHQ", case_insensitive=True, pass_context=True)
     async def MIRAHQ(self, ctx):
         if ctx.invoked_subcommand is None:
             await ctx.send("Invalid MIRA HQ command passed")
 
+    @MIRAHQ.group(name="retrieve", pass_context=True, aliases=["r"])
+    async def mirahq_retrieve(self, ctx, category, option):
+        await self.retrieve(ctx, category, option)
+
+    @MIRAHQ.group(name="search", pass_context=True, aliases=["s"])
+    async def mirahq_search(self, ctx, category):
+        await self.search(ctx, category)
+
     @commands.group(name="Polus", case_insensitive=True, pass_context=True)
     async def Polus(self, ctx):
         if ctx.invoked_subcommand is None:
             await ctx.send("Invalid Polus command passed")
+
+    @Polus.group(name="retrieve", pass_context=True, aliases=["r"])
+    async def polus_retrieve(self, ctx, category, option):
+        await self.retrieve(ctx, category, option)
+    
+    @Polus.group(name="search", pass_context=True, aliases=["s"])
+    async def polus_search(self, ctx, category):
+        await self.search(ctx, category)
 
     @commands.group(name="TheSkeld", case_insensitive=True, pass_context=True)
     async def TheSkeld(self, ctx):
        if ctx.invoked_subcommand is None:
             await ctx.send("Invalid The Skeld command passed")
 
-    @MIRAHQ.group(name="retrieve", pass_context=True, aliases=["r"])
-    async def mirahq_retrieve(self, ctx, category, option):
-        await self.retrieve(ctx, category, option)
-
-    @Polus.group(name="retrieve", pass_context=True, aliases=["r"])
-    async def polus_retrieve(self, ctx, category, option):
-        await self.retrieve(ctx, category, option)
-
     @TheSkeld.group(name="retrieve", pass_context=True, aliases=["r"])
     async def theskeld_retrieve(self, ctx, category, option):
         await self.retrieve(ctx, category, option)
 
+    @TheSkeld.group(name="search", pass_context=True, aliases=["s"])
+    async def theskeld_search(self, ctx, category):
+        await self.search(ctx, category)
+
     async def retrieve(self, ctx, category, option):
+        category, option = category.lower(), option.lower()
         mapname = ctx.command.full_parent_name.lower()
         data = self.data.get(mapname)
         if category not in data:
@@ -206,10 +220,30 @@ class MapInfo(commands.Cog):
         embed.set_footer(text=ctx.command.full_parent_name)
         image_name = f"{data['Name']}.png"
         image_path = os.path.join(
-            'data', mapname.lower(), category, image_name)
+            'data', mapname, category, image_name)
         image = discord.File(image_path, image_name)
         embed.set_image(url=f"attachment://{image_name}")
         await ctx.channel.send(file=image, embed=embed)
+        await ctx.message.delete()
+
+    async def search(self, ctx, category):
+        category = category.lower()
+        mapname = ctx.command.full_parent_name.lower()
+        data = self.data.get(mapname)
+        if category not in data:
+            await ctx.send(f"`category={category}` is not valid")
+            return
+        data = self.data[mapname][category]
+        if ctx.author.id in self.searches:
+            embed = self.searches[ctx.author.id]
+            await embed.message.delete()
+            del self.searches[ctx.author.id]
+        embed = ScrollingEmbed(
+            mapname, ctx.message, self.data[mapname], category,
+            ctx.command.full_parent_name)
+        embed.manage_embed()
+        await embed.send_with_reactions()
+        self.searches.setdefault(ctx.author.id, embed)
         await ctx.message.delete()
 
 class MapBot(commands.Bot):
