@@ -278,7 +278,7 @@ class MapInfo(commands.Cog):
                 f"`{k}`: {v[:20]}..." for k, v in data[item].items()])
             embed.add_field(name=item, value=text)
         embed.set_footer(text=ctx.command.full_parent_name)
-        image_name = f"{ctx.command.full_parent_name}.png"
+        image_name = f"{mapname}.png"
         image_path = os.path.join('data', image_name)
         image = discord.File(image_path, image_name)
         embed.set_image(url=f"attachment://{image_name}")
