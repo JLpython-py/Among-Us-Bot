@@ -242,7 +242,6 @@ class MapInfo(commands.Cog):
         image = discord.File(image_path, image_name)
         embed.set_image(url=f"attachment://{image_name}")
         await ctx.channel.send(file=image, embed=embed)
-        await ctx.message.delete()
 
     async def search(self, ctx, category):
         ''' Allow member to scroll through options for category of map
@@ -264,7 +263,6 @@ class MapInfo(commands.Cog):
         embed.manage_embed()
         await embed.send_with_reactions(ctx.message)
         self.searches.setdefault(ctx.author.id, embed)
-        await ctx.message.delete()
 
     async def listopts(self, ctx, category):
         ''' List all options for a category of map
@@ -289,7 +287,6 @@ class MapInfo(commands.Cog):
         image = discord.File(image_path, image_name)
         embed.set_image(url=f"attachment://{image_name}")
         await ctx.channel.send(file=image, embed=embed)
-        await ctx.message.delete()
 
     async def retrieve_from_search(self, payload):
         ''' Retrieve data for current option of embed
