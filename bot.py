@@ -66,6 +66,31 @@ class RandomAmongUs(commands.Cog):
             self.settings = json.load(file)
         self.maps = ["MIRA HQ", "Polus", "The Skeld"]
 
+    @commands.command(name="randomize", pass_context=True, aliases=["r"])
+    async def randomize(self, ctx):
+        ''' Invoke all commands in RandomAmongUs
+'''
+        for cmd in self.get_commands():
+            if cmd.name == "randomize":
+                continue
+            await ctx.invoke(cmd)
+
+    @commands.command(name="randmap", pass_context=True, aliases=["rm"])
+    async def randmap(self, ctx):
+        ''' Select random map
+'''
+        num = random.randint(1, 3)
+        mapname = random.choice(self.maps)
+        embed = discord.Embed(title="Randomize Map", color=0xff0000)
+        embed.add_field(name="Map", value=mapname)
+        embed.add_field(name="Impostors", value=num)
+        thumb_name = f"{''.join(mapname.split()).lower()}.png"
+        thumb_path = os.path.join(
+            'data', thumb_name)
+        thumbnail = discord.File(thumb_path, thumb_name)
+        embed.set_thumbnail(url=f"attachment://{thumb_name}")
+        await ctx.channel.send(file=thumbnail, embed=embed)
+
     @commands.command(name="randsettings", pass_context=True, aliases=["rs"])
     async def randsettings(self, ctx, setting=''):
         ''' Select random option for specified setting
@@ -86,20 +111,6 @@ class RandomAmongUs(commands.Cog):
         for field in fields:
             embed.add_field(name=field, value=fields[field])
         await ctx.send(embed=embed)
-
-    @commands.command(name="randmap", pass_context=True, aliases=["rm"])
-    async def randmap(self, ctx):
-        ''' Select random map
-'''
-        mapname = random.choice(self.maps)
-        embed = discord.Embed(title="Randomize Map", color=0xff0000)
-        embed.add_field(name="Map", value=mapname)
-        thumb_name = f"{''.join(mapname.split()).lower()}.png"
-        thumb_path = os.path.join(
-            'data', thumb_name)
-        thumbnail = discord.File(thumb_path, thumb_name)
-        embed.set_thumbnail(url=f"attachment://{thumb_name}")
-        await ctx.channel.send(file=thumbnail, embed=embed)
 
 class MapInfo(commands.Cog):
     ''' Allow member to explore available information in Among Us
@@ -122,10 +133,6 @@ class MapInfo(commands.Cog):
             await self.retrieve_from_search(payload)
         elif payload.emoji.name == u'\u274c':
             await self.delete_search(payload)
-        else:
-            channel = self.bot.get_channel(payload.channel_id)
-            message = await channel.fetch_message(payload.message_id)
-            await message.remove_reaction(payload.emoji, payload.member)
 
     @commands.group(name="MIRAHQ", case_insensitive=True, pass_context=True,
                     aliases=["MIRA", "MH"])
@@ -231,7 +238,6 @@ class MapInfo(commands.Cog):
         image = discord.File(image_path, image_name)
         embed.set_image(url=f"attachment://{image_name}")
         await ctx.channel.send(file=image, embed=embed)
-        await ctx.message.delete()
 
     async def search(self, ctx, category):
         ''' Allow member to scroll through options for category of map
@@ -253,7 +259,6 @@ class MapInfo(commands.Cog):
         embed.manage_embed()
         await embed.send_with_reactions(ctx.message)
         self.searches.setdefault(ctx.author.id, embed)
-        await ctx.message.delete()
 
     async def listopts(self, ctx, category):
         ''' List all options for a category of map
@@ -273,12 +278,11 @@ class MapInfo(commands.Cog):
                 f"`{k}`: {v[:20]}..." for k, v in data[item].items()])
             embed.add_field(name=item, value=text)
         embed.set_footer(text=ctx.command.full_parent_name)
-        image_name = f"{ctx.command.full_parent_name}.png"
+        image_name = f"{mapname}.png"
         image_path = os.path.join('data', image_name)
         image = discord.File(image_path, image_name)
         embed.set_image(url=f"attachment://{image_name}")
         await ctx.channel.send(file=image, embed=embed)
-        await ctx.message.delete()
 
     async def retrieve_from_search(self, payload):
         ''' Retrieve data for current option of embed
@@ -307,7 +311,7 @@ class MapInfo(commands.Cog):
         embed.set_footer(text=mapname)
         image_name = f"{data['Name']}.png"
         image_path = os.path.join(
-            'data', mapname, category, image_name)
+            'data', mapname.lower(), category, image_name)
         image = discord.File(image_path, image_name)
         embed.set_image(url=f"attachment://{image_name}")
         await channel.send(file=image, embed=embed)
