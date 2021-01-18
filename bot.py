@@ -133,10 +133,6 @@ class MapInfo(commands.Cog):
             await self.retrieve_from_search(payload)
         elif payload.emoji.name == u'\u274c':
             await self.delete_search(payload)
-        else:
-            channel = self.bot.get_channel(payload.channel_id)
-            message = await channel.fetch_message(payload.message_id)
-            await message.remove_reaction(payload.emoji, payload.member)
 
     @commands.group(name="MIRAHQ", case_insensitive=True, pass_context=True,
                     aliases=["MIRA", "MH"])
