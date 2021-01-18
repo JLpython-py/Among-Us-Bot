@@ -311,7 +311,7 @@ class MapInfo(commands.Cog):
         embed.set_footer(text=mapname)
         image_name = f"{data['Name']}.png"
         image_path = os.path.join(
-            'data', mapname, category, image_name)
+            'data', mapname.lower(), category, image_name)
         image = discord.File(image_path, image_name)
         embed.set_image(url=f"attachment://{image_name}")
         await channel.send(file=image, embed=embed)
