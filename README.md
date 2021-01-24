@@ -8,7 +8,7 @@
 ![GitHub deployments](https://img.shields.io/github/deployments/JLpython-py/AmongUs-MapBot/GitHub-pages)
 ![GitHub](https://img.shields.io/github/license/JLpython-py/AmongUs-MapBot)
 
-![AmongUs-MapBot logo](https://user-images.githubusercontent.com/72679601/105618817-8441fe00-5da0-11eb-97ee-4756d629d01a.png)
+![AmongUs-MapBot logo](https://user-images.githubusercontent.com/72679601/105637399-32da5300-5e22-11eb-8c15-f2b14f3a1568.png)
 
 The AmongUs-MapBot is a Discord bot which acts as an easily-accessible database of Among Us. Members of guilds with this bot can interact with the bot to quickly reference this information.
 
