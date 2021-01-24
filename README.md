@@ -16,13 +16,18 @@ The AmongUs-MapBot is a Discord bot which acts as an easily-accessible database 
 
 <h3>Map Database</h2>
 
-This repository has data about nearly all aspect of the Among Us maps. Member of guilds can use a sent of comprehensive commands to reference the available data. [See more details]().
+![TheSkeld retrieve "Clean O2 Filter"](https://user-images.githubusercontent.com/72679601/105637275-89935d00-5e21-11eb-86bd-19afb25bd01e.png)
+
+This repository has data about nearly all aspect of the Among Us maps. Member of guilds can use a sent of comprehensive commands to reference the available data. [See more details](https://github.com/JLpython-py/AmongUs-MapBot/wiki/MapInfo).
 
 **Coming Soon: Data from the soon-to-be-released _Airship_ map has already been compiled. On the day the map is released, the available data will be released.**
 
 <h3>Random Among Us</h2>
 
-Just like its name implies, this feature allows members to generate a random map, a random number of impostors, and a random option for a specific setting or for all the in-game settings. [See more details]().
+![randmap](https://user-images.githubusercontent.com/72679601/105637274-88fac680-5e21-11eb-92a4-f84084454e4f.png)
+![randsettings](https://user-images.githubusercontent.com/72679601/105637273-88fac680-5e21-11eb-9d35-a7167fc2ce7b.png)
+
+Just like its name implies, this feature allows members to generate a random map, a random number of impostors, and a random option for a specific setting or for all the in-game settings. [See more details](https://github.com/JLpython-py/AmongUs-MapBot/wiki/RandomAmongUs).
 
 <h3>Coming Soon: Voice Channel Control</h3>
 
