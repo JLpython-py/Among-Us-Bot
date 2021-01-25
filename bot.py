@@ -17,7 +17,8 @@ import discord
 from discord.ext import commands
 
 logging.basicConfig(
-    level=logging.INFO, format=' %(asctime)s - %(levelname)s - %(message)s')
+    level=logging.INFO,
+    format=' %(asctime)s - %(levelname)s - %(message)s')
 
 class MapBot(commands.Bot):
     '''
@@ -422,7 +423,8 @@ class VoiceChannelControl(commands.Cog):
         channel = self.bot.get_channel(payload.channel_id)
         message = await channel.fetch_message(payload.message_id)
         embed = message.embeds[0]
-        if embed.footer.text != "VoiceChannelControl":
+        if message.author.id != self.bot.user.id or\
+           embed.footer.text != "VoiceChannelControl":
             return
         if payload.emoji.name in self.emojis:
             await self.claim_control_panel(payload)
@@ -430,7 +432,13 @@ class VoiceChannelControl(commands.Cog):
             await self.cancel_claim(payload)
         elif payload.emoji.name in ["\U0001f507", "\U0001f508"]:
             await self.voice_control(payload)
-        elif payload.emoji.name == "\U0001f3f3":
+        elif payload.emoji.name == u"\U0001F47B":
+            await self.member_dead(payload)
+        elif payload.emoji.name == u"\U0001F3E5":
+            await self.member_alive(payload)
+        elif payload.emoji.name == u"\U0001F504":
+            await self.reset_game(payload)
+        elif payload.emoji.name == u"\U0001f3f3":
             await self.yield_control(payload)
 
     @commands.command(name="claim", pass_context=True)
@@ -457,6 +465,15 @@ class VoiceChannelControl(commands.Cog):
         pass
 
     async def voice_control(self, payload):
+        pass
+
+    async def member_dead(self, payload):
+        pass
+
+    async def member_alive(self, payload):
+        pass
+
+    async def reset_game(self, payload):
         pass
 
     async def yield_control(self, payload):
