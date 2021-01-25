@@ -20,20 +20,20 @@ logging.basicConfig(
     level=logging.INFO,
     format=' %(asctime)s - %(levelname)s - %(message)s')
 
-class MapBot(commands.Bot):
+class AUBot(commands.Bot):
     '''
 '''
-    def __init__(self, *, prefix, name):
-        intents = discord.Intents()
+    def __init__(self, *, prefix):
+        intents = discord.Intents.default()
         intents.members = True
         intents.guilds = True
-        self.bot = commands.Bot(
-            command_prefix=prefix, case_insensitive=True, intents=intents)
+        commands.Bot.__init__(
+            self, command_prefix=prefix, case_insensitive=True,
+            intents=intents, self_bot=False)
         self.read_files()
-        self.name = name
-        self.bot.add_cog(MapInfo(self.bot, self.data))
-        self.bot.add_cog(RandomAmongUs(self.bot))
-        self.bot.add_cog(VoiceChannelControl(self.bot))
+        self.add_cog(MapInfo(self, self.data))
+        self.add_cog(RandomAmongUs(self))
+        self.add_cog(VoiceChannelControl(self))
 
     def read_files(self):
         ''' Read CSV data for each map
@@ -59,7 +59,9 @@ class MapBot(commands.Bot):
     async def on_ready(self):
         ''' Notify that bot is ready
 '''
-        logging.info("Ready: %s", self.name)
+        await self.change_presence(
+            activity=discord.Game(name="+help | Among Us"))
+        logging.info("Ready: %s", self.user.name)
 
 class RandomAmongUs(commands.Cog):
     ''' Generate a random option for various categories in Among Us
@@ -411,7 +413,6 @@ class VoiceChannelControl(commands.Cog):
             u'9\ufe0f\u20e3']
         self.claims = {}
         self.claim_requests = {}
-        self.voice_channels = {}
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -424,13 +425,9 @@ class VoiceChannelControl(commands.Cog):
         message = await channel.fetch_message(payload.message_id)
         embed = message.embeds[0]
         if message.author.id != self.bot.user.id or\
-           embed.footer.text != "VoiceChannelControl":
+           "VoiceChannelControl" not in embed.footer.text:
             return
-        if payload.emoji.name in self.emojis:
-            await self.claim_control_panel(payload)
-        elif payload.emoji.name == u'\u274c':
-            await self.cancel_claim(payload)
-        elif payload.emoji.name in ["\U0001f507", "\U0001f508"]:
+        if payload.emoji.name in ["\U0001f507", "\U0001f508"]:
             await self.voice_control(payload)
         elif payload.emoji.name == u"\U0001F47B":
             await self.member_dead(payload)
@@ -456,7 +453,41 @@ class VoiceChannelControl(commands.Cog):
         await self.claim_request_panel(ctx)
 
     async def claim_request_panel(self, ctx):
-        pass
+        ''' Send an embed with reactions for member to claim a voice channel
+'''
+        if len(ctx.guild.voice_channels) > 10:
+            voice_channels = ctx.guild.voice_channels[:10]
+        else:
+            voice_channels = ctx.guild.voice_channels
+        embed = discord.Embed(
+            title="Voice Channel Claim", color=0x0000ff)
+        fields = {
+            "Channel Options": '\n'.join([
+                f"{self.emojis[voice_channels.index(c)]} - {c}"\
+                for c in voice_channels]),
+            "Claim": "Use the reactions below to claim a voice channel",
+            "Cancel": "React with :x: to cancel"}
+        for field in fields:
+            embed.add_field(name=field, value=fields[field])
+        embed.set_footer(text=f"VoiceChannelControl")
+        message = await ctx.channel.send(embed=embed)
+        for channel in voice_channels:
+            await message.add_reaction(
+                self.emojis[voice_channels.index(channel)])
+        await message.add_reaction(u'\u274c')
+
+        def check(payload):
+            return (payload.member.id == ctx.author.id)\
+                   and (payload.emoji.name in self.emojis\
+                        or payload.emoji.name == u'\u274c')
+
+        try:
+            payload = await self.bot.wait_for(
+                'raw_reaction_add', timeout=60.0,
+                check=check)
+            await self.claim_control_panel(payload)
+        except asyncio.TimeOutError:
+            await message.delete()
 
     async def claim_control_panel(self, payload):
         pass
@@ -488,8 +519,7 @@ def main():
             token = file.read()
     assert token is not None
     loop = asyncio.get_event_loop()
-    discord_bot = MapBot(
-        prefix="+", name="AmongUs MapBot")
+    discord_bot = AUBot(prefix="+")
     loop.create_task(discord_bot.start(token))
     loop.run_forever()
 
