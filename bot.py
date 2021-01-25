@@ -23,13 +23,16 @@ class MapBot(commands.Bot):
     '''
 '''
     def __init__(self, *, prefix, name):
-        commands.Bot.__init__(
-            self, command_prefix=prefix,
-            case_insensitive=True, self_bot=False)
+        intents = discord.Intents()
+        intents.members = True
+        intents.guilds = True
+        self.bot = commands.Bot(
+            command_prefix=prefix, case_insensitive=True, intents=intents)
         self.read_files()
         self.name = name
-        self.add_cog(MapInfo(self, self.data))
-        self.add_cog(RandomAmongUs(self))
+        self.bot.add_cog(MapInfo(self.bot, self.data))
+        self.bot.add_cog(RandomAmongUs(self.bot))
+        self.bot.add_cog(VoiceChannelControl(self.bot))
 
     def read_files(self):
         ''' Read CSV data for each map
@@ -395,6 +398,11 @@ class ScrollingEmbed:
         self.manage_embed(index=index)
         await self.message.edit(embed=self.embed)
         await self.message.remove_reaction(payload.emoji, payload.member)
+
+class VoiceChannelControl(commands.Cog):
+
+    def __init__(self, bot):
+        self.bot = bot
 
 def main():
     ''' Run MapBot called AmongUs MapBot on static token
