@@ -403,6 +403,47 @@ class VoiceChannelControl(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.emojis = [
+            u'0\ufe0f\u20e3', u'1\ufe0f\u20e3', u'2\ufe0f\u20e3',
+            u'3\ufe0f\u20e3', u'4\ufe0f\u20e3', u'5\ufe0f\u20e3',
+            u'6\ufe0f\u20e3', u'7\ufe0f\u20e3', u'8\ufe0f\u20e3',
+            u'9\ufe0f\u20e3']
+        self.claims = {}
+        self.claim_requests = {}
+        self.voice_channels = {}
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload):
+        ''' Listen for member using emojis to control others members' voices
+'''
+        logging.info("Raw Reaction Add: %s", payload)
+        if payload.member.bot:
+            return
+        channel = self.bot.get_channel(payload.channel_id)
+        message = await channel.fetch_message(payload.message_id)
+        embed = message.embeds[0]
+        if embed.footer.text != "VoiceChannelControl":
+            return
+        if payload.emoji.name in self.emojis:
+            await self.claim_control_panel(payload)
+        elif payload.emoji.name == u'\u274c':
+            await self.cancel_claim(payload)
+        elif payload.emoji.name in ["\U0001f507", "\U0001f508"]:
+            await self.voice_control(payload)
+        elif payload.emoji.name == "\U0001f3f3":
+            await self.yield_control(payload)
+
+    async def claim_control_panel(self, payload):
+        pass
+
+    async def cancel_claim(self, payload):
+        pass
+
+    async def voice_control(self, payload):
+        pass
+
+    async def yield_control(self, payload):
+        pass
 
 def main():
     ''' Run MapBot called AmongUs MapBot on static token
