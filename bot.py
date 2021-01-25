@@ -433,6 +433,23 @@ class VoiceChannelControl(commands.Cog):
         elif payload.emoji.name == "\U0001f3f3":
             await self.yield_control(payload)
 
+    @commands.command(name="claim", pass_context=True)
+    async def claim(self, ctx):
+        ''' Invoke a claim request panel
+            Member cannot have an active claim request
+            Member cannot have a claim on another voice channel
+'''
+        if ctx.author.id in self.claim_requests:
+            await ctx.send("You already have an active claim request")
+            return
+        if ctx.author.id in self.claims:
+            await ctx.send("You already have a voice channel claim")
+            return
+        await self.claim_request_panel(ctx)
+
+    async def claim_request_panel(self, ctx):
+        pass
+
     async def claim_control_panel(self, payload):
         pass
 
