@@ -1,9 +1,9 @@
 #! python3
 # bots.py
 
-'''
+"""
 
-'''
+"""
 
 import asyncio
 import csv
@@ -20,9 +20,10 @@ logging.basicConfig(
     level=logging.INFO,
     format=' %(asctime)s - %(levelname)s - %(message)s')
 
+
 class AUBot(commands.Bot):
-    '''
-'''
+    """
+"""
     def __init__(self, *, prefix):
         intents = discord.Intents.default()
         intents.members = True
@@ -36,8 +37,8 @@ class AUBot(commands.Bot):
         self.add_cog(VoiceChannelControl(self))
 
     def read_files(self):
-        ''' Read CSV data for each map
-'''
+        """ Read CSV data for each map
+"""
         self.data = {}
         for maps in ['mirahq', 'polus', 'theskeld']:
             map_data = {}
@@ -57,15 +58,16 @@ class AUBot(commands.Bot):
             self.data.setdefault(maps, map_data)
 
     async def on_ready(self):
-        ''' Notify that bot is ready
-'''
+        """ Notify that bot is ready
+"""
         await self.change_presence(
             activity=discord.Game(name="+help | Among Us"))
         logging.info("Ready: %s", self.user.name)
 
+
 class RandomAmongUs(commands.Cog):
-    ''' Generate a random option for various categories in Among Us
-'''
+    """ Generate a random option for various categories in Among Us
+"""
     def __init__(self, bot):
         self.bot = bot
         with open(os.path.join('data', 'settings.txt')) as file:
@@ -74,8 +76,8 @@ class RandomAmongUs(commands.Cog):
 
     @commands.command(name="randomize", pass_context=True, aliases=["r"])
     async def randomize(self, ctx):
-        ''' Invoke all commands in RandomAmongUs
-'''
+        """ Invoke all commands in RandomAmongUs
+"""
         for cmd in self.get_commands():
             if cmd.name == "randomize":
                 continue
@@ -83,8 +85,8 @@ class RandomAmongUs(commands.Cog):
 
     @commands.command(name="randmap", pass_context=True, aliases=["rm"])
     async def randmap(self, ctx):
-        ''' Select random map
-'''
+        """ Select random map
+"""
         num = random.randint(1, 3)
         mapname = random.choice(self.maps)
         embed = discord.Embed(title="Randomize Map", color=0xff0000)
@@ -99,10 +101,10 @@ class RandomAmongUs(commands.Cog):
 
     @commands.command(name="randsettings", pass_context=True, aliases=["rs"])
     async def randsettings(self, ctx, setting=''):
-        ''' Select random option for specified setting
+        """ Select random option for specified setting
             <setting> can be any of the settings which can be modified in-lobby
             Leaving <setting> blank will randomize all settings
-'''
+"""
         setting = setting.title()
         options = self.settings.get(setting)
         fields = {}
@@ -118,9 +120,10 @@ class RandomAmongUs(commands.Cog):
             embed.add_field(name=field, value=fields[field])
         await ctx.send(embed=embed)
 
+
 class MapInfo(commands.Cog):
-    ''' Allow member to explore available information in Among Us
-'''
+    """ Allow member to explore available information in Among Us
+"""
     def __init__(self, bot, data):
         self.bot = bot
         self.data = data
@@ -128,8 +131,8 @@ class MapInfo(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
-        ''' Manage response to added reaction
-'''
+        """ Manage response to added reaction
+"""
         if payload.member.bot:
             return
         if payload.emoji.name in [
@@ -143,85 +146,85 @@ class MapInfo(commands.Cog):
     @commands.group(name="MIRAHQ", case_insensitive=True, pass_context=True,
                     aliases=["MIRA", "MH"])
     async def MIRAHQ(self, ctx):
-        ''' Command group to parse information from MIRA HQ data
-'''
+        """ Command group to parse information from MIRA HQ data
+"""
         if ctx.invoked_subcommand is None:
             await ctx.send("Invalid MIRA HQ command passed")
 
     @MIRAHQ.group(name="retrieve", pass_context=True, aliases=["r"])
     async def mirahq_retrieve(self, ctx, category, option):
-        ''' Retrieve option for category in MIRA HQ data
-'''
+        """ Retrieve option for category in MIRA HQ data
+"""
         await self.retrieve(ctx, category, option)
 
     @MIRAHQ.group(name="search", pass_context=True, aliases=["s"])
     async def mirahq_search(self, ctx, category):
-        ''' Search options for category in MIRA HQ data
-'''
+        """ Search options for category in MIRA HQ data
+"""
         await self.search(ctx, category)
 
     @MIRAHQ.group(name="listopts", pass_context=True, aliases=["ls"])
     async def mirahq_listopts(self, ctx, category):
-        ''' List options for category in MIRA HQ data
-'''
+        """ List options for category in MIRA HQ data
+"""
         await self.listopts(ctx, category)
 
     @commands.group(name="Polus", case_insensitive=True, pass_context=True,
                     aliases=["P"])
     async def Polus(self, ctx):
-        ''' Command group to parse information from Polus data
-'''
+        """ Command group to parse information from Polus data
+"""
         if ctx.invoked_subcommand is None:
             await ctx.send("Invalid Polus command passed")
 
     @Polus.group(name="retrieve", pass_context=True, aliases=["r"])
     async def polus_retrieve(self, ctx, category, option):
-        ''' Retrieve option for category in Polus data
-'''
+        """ Retrieve option for category in Polus data
+"""
         await self.retrieve(ctx, category, option)
 
     @Polus.group(name="search", pass_context=True, aliases=["s"])
     async def polus_search(self, ctx, category):
-        ''' Search options for category in Polus data
-'''
+        """ Search options for category in Polus data
+"""
         await self.search(ctx, category)
 
     @Polus.group(name="listopts", pass_context=True, aliases=["ls"])
     async def polus_listopts(self, ctx, category):
-        ''' List options for category in Polus data
-'''
+        """ List options for category in Polus data
+"""
         await self.listopts(ctx, category)
 
     @commands.group(name="TheSkeld", case_insensitive=True, pass_context=True,
                     aliases=["Skeld", "TS"])
     async def TheSkeld(self, ctx):
-        ''' Command group to parse information from The Skeld data
-'''
+        """ Command group to parse information from The Skeld data
+"""
         if ctx.invoked_subcommand is None:
             await ctx.send("Invalid The Skeld command passed")
 
     @TheSkeld.group(name="retrieve", pass_context=True, aliases=["r"])
     async def theskeld_retrieve(self, ctx, category, option):
-        ''' Retrieve option for category in The Skeld data
-'''
+        """ Retrieve option for category in The Skeld data
+"""
         await self.retrieve(ctx, category, option)
 
     @TheSkeld.group(name="search", pass_context=True, aliases=["s"])
     async def theskeld_search(self, ctx, category):
-        ''' Search options for category in The Skeld data
-'''
+        """ Search options for category in The Skeld data
+"""
         await self.search(ctx, category)
 
     @TheSkeld.group(name="listopts", pass_context=True, aliases=["ls"])
     async def theskeld_listopts(self, ctx, category):
-        ''' List options for category in The Skeld data
-'''
+        """ List options for category in The Skeld data
+"""
         await self.listopts(ctx, category)
 
     async def retrieve(self, ctx, category, option):
-        ''' Retrieve data for option for category of map
-'''
-        #Validate category and option
+        """ Retrieve data for option for category of map
+"""
+        # Validate category and option
         category, option = category.lower(), option.title()
         mapname = ctx.command.full_parent_name.lower()
         if category not in self.data[mapname]:
@@ -230,7 +233,7 @@ class MapInfo(commands.Cog):
         if option not in self.data[mapname][category]:
             await ctx.send(f"`option={option}` is not valid")
             return
-        #Get data from category and option and send in embed
+        # Get data from category and option and send in embed
         data = self.data[mapname][category][option]
         embed = discord.Embed(
             title=f"{category.title()}: {option}",
@@ -246,20 +249,20 @@ class MapInfo(commands.Cog):
         await ctx.channel.send(file=image, embed=embed)
 
     async def search(self, ctx, category):
-        ''' Allow member to scroll through options for category of map
-'''
-        #Validate category
+        """ Allow member to scroll through options for category of map
+"""
+        # Validate category
         category = category.lower()
         mapname = ctx.command.full_parent_name.lower()
         if category not in self.data[mapname]:
             await ctx.send(f"`category={category}` is not valid")
             return
-        #Delete any existing search
+        # Delete any existing search
         if ctx.author.id in self.searches:
             embed = self.searches[ctx.author.id]
             await embed.message.delete()
             del self.searches[ctx.author.id]
-        #Create embed for member to scroll data with
+        # Create embed for member to scroll data with
         embed = ScrollingEmbed(
             ctx.command.full_parent_name, category, self.data)
         embed.manage_embed()
@@ -267,15 +270,15 @@ class MapInfo(commands.Cog):
         self.searches.setdefault(ctx.author.id, embed)
 
     async def listopts(self, ctx, category):
-        ''' List all options for a category of map
-'''
-        #Validate category
+        """ List all options for a category of map
+"""
+        # Validate category
         category = category.lower()
         mapname = ctx.command.full_parent_name.lower()
         if category not in self.data[mapname]:
             await ctx.send(f"`category={category}` is not valid")
             return
-        #Get data for category and send all options in embed
+        # Get data for category and send all options in embed
         data = self.data[mapname][category]
         embed = discord.Embed(
             title=category.title(), color=0xff0000)
@@ -291,9 +294,9 @@ class MapInfo(commands.Cog):
         await ctx.channel.send(file=image, embed=embed)
 
     async def retrieve_from_search(self, payload):
-        ''' Retrieve data for current option of embed
-'''
-        #Process payload information
+        """ Retrieve data for current option of embed
+"""
+        # Process payload information
         channel = self.bot.get_channel(payload.channel_id)
         message = await channel.fetch_message(payload.message_id)
         #Get map and category from embed
@@ -305,10 +308,10 @@ class MapInfo(commands.Cog):
             r"^(.*):")
         category = title_regex.search(
             message.embeds[0].title).group(1).lower()
-        #Get data from embed from searches by payload
+        # Get data from embed from searches by payload
         option = self.searches.get(payload.member.id).option
         data = self.data[mapname.lower()][category][option]
-        #Edit embed to mimic retrieve command
+        # Edit embed to mimic retrieve command
         embed = discord.Embed(
             title=f"{category.title()}: {option.title()}",
             color=0x0000ff)
@@ -325,21 +328,22 @@ class MapInfo(commands.Cog):
         del self.searches[payload.member.id]
 
     async def scroll(self, payload):
-        ''' Scroll embed from search command based on the emoji used
-'''
+        """ Scroll embed from search command based on the emoji used
+"""
         embed = self.searches.get(payload.member.id)
         await embed.scroll(payload)
 
     async def delete_search(self, payload):
-        ''' Delete embed from search command
-'''
+        """ Delete embed from search command
+"""
         embed = self.searches.get(payload.member.id)
         await embed.message.delete()
         del self.searches[payload.member.id]
 
+
 class ScrollingEmbed:
-    ''' Generate embed which a member can scroll by using reactions
-'''
+    """ Generate embed which a member can scroll by using reactions
+"""
     def __init__(self, name, category, data):
         self.name = name
         self.category = category
@@ -353,9 +357,9 @@ class ScrollingEmbed:
         self.memberid = 0
 
     def manage_embed(self, index=0):
-        ''' Edit the existing embed with new data
-'''
-        #Create embed with data in body and page number in footer
+        """ Edit the existing embed with new data
+"""
+        # Create embed with data in body and page number in footer
         self.embed = discord.Embed(
             title=f"{self.category.title()}: {self.option}",
             color=0x0000ff)
@@ -363,15 +367,15 @@ class ScrollingEmbed:
             text=f"{self.name}: Page {index+1}/{len(self.items)}")
         for item in self.data:
             self.embed.add_field(name=item, value=self.data[item])
-        #Attach image to embed
+        # Attach image to embed
         image_name = f"{self.name.lower()}.png"
         image_path = os.path.join('data', image_name)
         self.image = discord.File(image_path, image_name)
         self.embed.set_image(url=f"attachment://{image_name}")
 
     async def send_with_reactions(self, message):
-        ''' Send generated embed and react with designated emojis
-'''
+        """ Send generated embed and react with designated emojis
+"""
         self.memberid = message.author.id
         self.message = await message.channel.send(
             file=self.image, embed=self.embed)
@@ -382,25 +386,26 @@ class ScrollingEmbed:
             await self.message.add_reaction(rxn)
 
     async def scroll(self, payload):
-        ''' Get new data based on emoji used
-'''
-        #Validate member who reacted requested embed
+        """ Get new data based on emoji used
+"""
+        # Validate member who reacted requested embed
         if payload.member.id != self.memberid:
             await self.message.remove_reaction(
                 payload.emoji, payload.member)
             return
-        #Get current index and scroll according to emoji
+        # Get current index and scroll according to emoji
         index = list(self.items).index(self.option)
         scroll = {
             u'\u23ee': 0, u'\u23ea': index-5, u'\u25c0': index-1,
             u'\u25b6': index+1, u'\u23e9': index+5, u'\u23ed': -1}
         index = scroll.get(payload.emoji.name)%len(self.items)
-        #Get new option and new data from new index
+        # Get new option and new data from new index
         self.option = list(self.items)[index]
         self.data = self.items.get(self.option)
         self.manage_embed(index=index)
         await self.message.edit(embed=self.embed)
         await self.message.remove_reaction(payload.emoji, payload.member)
+
 
 class VoiceChannelControl(commands.Cog):
 
@@ -416,8 +421,8 @@ class VoiceChannelControl(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
-        ''' Listen for member using emojis to control others members' voices
-'''
+        """ Listen for member using emojis to control others members' voices
+"""
         logging.info("Raw Reaction Add: %s", payload)
         if payload.member.bot:
             return
@@ -427,7 +432,7 @@ class VoiceChannelControl(commands.Cog):
         if message.author.id != self.bot.user.id or\
            "VoiceChannelControl" not in embed.footer.text:
             return
-        if payload.emoji.name in ["\U0001f507", "\U0001f508"]:
+        if payload.emoji.name in [u"\U0001F507", u"\U0001F508"]:
             await self.voice_control(payload)
         elif payload.emoji.name == u"\U0001F47B":
             await self.member_dead(payload)
@@ -435,26 +440,23 @@ class VoiceChannelControl(commands.Cog):
             await self.member_alive(payload)
         elif payload.emoji.name == u"\U0001F504":
             await self.reset_game(payload)
-        elif payload.emoji.name == u"\U0001f3f3":
+        elif payload.emoji.name == u"\U0001F3F3":
             await self.yield_control(payload)
 
     @commands.command(name="claim", pass_context=True)
     async def claim(self, ctx):
-        ''' Invoke a claim request panel
+        """ Invoke a claim request panel
             Member cannot have an active claim request
             Member cannot have a claim on another voice channel
-'''
-        if ctx.author.id in self.claim_requests:
-            await ctx.send("You already have an active claim request")
-            return
+"""
         if ctx.author.id in self.claims:
             await ctx.send("You already have a voice channel claim")
             return
         await self.claim_request_panel(ctx)
 
     async def claim_request_panel(self, ctx):
-        ''' Send an embed with reactions for member to claim a voice channel
-'''
+        """ Send an embed with reactions for member to claim a voice channel
+"""
         if len(ctx.guild.voice_channels) > 10:
             voice_channels = ctx.guild.voice_channels[:10]
         else:
@@ -475,22 +477,40 @@ class VoiceChannelControl(commands.Cog):
             await message.add_reaction(
                 self.emojis[voice_channels.index(channel)])
         await message.add_reaction(u'\u274c')
-
-        def check(payload):
-            return (payload.member.id == ctx.author.id)\
-                   and (payload.emoji.name in self.emojis\
-                        or payload.emoji.name == u'\u274c')
-
+        check = lambda p: (
+            (p.member.id == ctx.author.id)
+            and (p.emoji.name in self.emojis or p.emoji.name == u'\u274c'))
         try:
             payload = await self.bot.wait_for(
                 'raw_reaction_add', timeout=60.0,
                 check=check)
             await self.claim_control_panel(payload)
-        except asyncio.TimeOutError:
+        except asyncio.TimeoutError:
             await message.delete()
 
     async def claim_control_panel(self, payload):
-        pass
+        voice_channel = payload.member.guild.voice_channels[
+            self.emojis.index(payload.emoji.name)]
+        channel = self.bot.get_channel(payload.channel_id)
+        message = await channel.fetch_message(payload.message_id)
+        self.claims.setdefault(payload.member.id, voice_channel.id)
+        embed = discord.Embed(
+            title="Voice Channel Control", color=0x0000ff)
+        fields = {
+            "Claimed": f"You have successfully claimed {voice_channel.name}",
+            "Voice Channel Control": '\n'.join([
+                "Mute all - :mute:", "Unmute all - :speaker:",
+                "Yield - :flag_white:"])}
+        for field in fields:
+            embed.add_field(name=field, value=fields[field])
+        embed.set_footer(text="VoiceChannelControl")
+        await message.edit(embed=embed)
+        await message.clear_reactions()
+        reactions = [
+            u"\U0001F507", u"\U0001F508", u"\U0001F47B",
+            u"\U0001F3E5", u"\U0001F504", u"\U0001F3F3"]
+        for reaction in reactions:
+            await message.add_reaction(reaction)
 
     async def cancel_claim(self, payload):
         pass
@@ -510,9 +530,10 @@ class VoiceChannelControl(commands.Cog):
     async def yield_control(self, payload):
         pass
 
+
 def main():
-    ''' Run MapBot called AmongUs MapBot on static token
-'''
+    """ Run MapBot called AmongUs MapBot on static token
+"""
     token = os.environ.get("token", None)
     if token is None:
         with open('token.txt') as file:
@@ -522,6 +543,7 @@ def main():
     discord_bot = AUBot(prefix="+")
     loop.create_task(discord_bot.start(token))
     loop.run_forever()
+
 
 if __name__ == '__main__':
     main()
