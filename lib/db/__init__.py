@@ -36,15 +36,12 @@ SETUP_QUERIES = [
     );"""
     ]
 
-# TODO: Uncomment once Airship map is released
-# AIRSHIP = db.AirshipDB()
-# AIRSHIP.execute_query(SETUP_QUERIES, "w")
-
+AIRSHIP = db.AirshipDB()
 MIRAHQ = db.MIRAHQDB()
-MIRAHQ.execute_query(SETUP_QUERIES, "w")
-
 POLUS = db.PolusDB()
-POLUS.execute_query(SETUP_QUERIES, "w")
-
 THESKELD = db.TheSkeldDB()
-THESKELD.execute_query(SETUP_QUERIES, "w")
+
+CONNECTIONS = [MIRAHQ, POLUS, THESKELD]
+for CONN in CONNECTIONS:
+    for QUERY in SETUP_QUERIES:
+        CONN.execute_query(QUERY, "w")

@@ -3,3 +3,4 @@ data/Airship/
 token.txt
 repository_logo.png
 .idea/
+**/__pycache__/
