@@ -1,3 +1,5 @@
 virtualenv/
 data/Airship/
 token.txt
+repository_logo.png
+.idea/
