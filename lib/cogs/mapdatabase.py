@@ -46,31 +46,10 @@ class MapDatabase(commands.Cog):
 """
     def __init__(self, bot):
         self.bot = bot
-        self.searches = {}
-
-    @commands.Cog.listener()
-    async def on_raw_reaction_add(self, payload):
-        """ Manage response to added reaction
-"""
-        if payload.member.bot:
-            return
-        channel = self.bot.get_channel(payload.channel_id)
-        message = await channel.fetch_message(payload.message_id)
-        embed = message.embeds[0]
-        if payload.member.id == message.author.id:
-            return
-        if not any([m in embed.footer.text for m in [
-            "Airship", "MIRAHQ", "Polus", "TheSkeld"
-        ]]):
-            return
-        if payload.emoji.name in [
-            u'\u23ee', u'\u23ea', u'\u25c0', u'\u25b6', u'\u23e9', u'\u23ed'
-        ]:
-            await self.scroll(payload)
-        elif payload.emoji.name == u'\u2714':
-            await self.retrieve_from_search(payload)
-        elif payload.emoji.name == u'\u274c':
-            await self.delete_search(payload)
+        self.connections = {
+            "airship": self.bot.airship, "mirahq": self.bot.mirahq,
+            "polus": self.bot.polus, "theskeld": self.bot.theskeld
+        }
 
     @commands.group(
         name="Airship", case_insensitive=True, pass_context=True,
@@ -224,12 +203,8 @@ class MapDatabase(commands.Cog):
         """ Retrieve data for option for category of map
 """
         # Get appropriate database connection
-        connections = {
-            "airship": self.bot.airship, "mirahq": self.bot.mirahq,
-            "polus": self.bot.polus, "theskeld": self.bot.theskeld
-        }
         mapname = ctx.command.full_parent_name.lower()
-        connection = connections.get(mapname)
+        connection = self.connections.get(mapname)
         # Get data from database
         category, option = category.lower(), option.title()
         query = f"""
@@ -265,12 +240,8 @@ class MapDatabase(commands.Cog):
         """ Allow member to scroll through options for category of map
 """
         # Get appropriate database connection
-        connections = {
-            "airship": self.bot.airship, "mirahq": self.bot.mirahq,
-            "polus": self.bot.polus, "theskeld": self.bot.theskeld
-        }
         mapname = ctx.command.full_parent_name.lower()
-        connection = connections.get(mapname)
+        connection = self.connections.get(mapname)
         # Get data from database
         category = category.lower()
         query = f"""
@@ -291,19 +262,15 @@ class MapDatabase(commands.Cog):
         }
         # Create embed for member to scroll data with
         embed, image = scrolling_embed(
-            ctx.author, ctx.command.full_parent_name, category, data
+            ctx.command.full_parent_name, category, data
         )
         message = await send_with_reactions(ctx, embed, image)
-
-        def check(pay):
-            return pay.member.id == ctx.author.id
-
         while True:
             try:
                 payload = await self.bot.wait_for(
                     "raw_reaction_add",
                     timeout=60.0,
-                    check=check
+                    check=lambda p: p.member.id == ctx.author.id
                 )
                 if payload.emoji.name in [
                     u'\u23ee', u'\u23ea', u'\u25c0', u'\u25b6', u'\u23e9',
@@ -311,7 +278,7 @@ class MapDatabase(commands.Cog):
                 ]:
                     await self.scroll(payload, data)
                 elif payload.emoji.name == u'\u2714':
-                    await self.retrieve_from_search(payload)
+                    await self.retrieve_from_search(payload, data)
                 elif payload.emoji.name == u'\u274c':
                     await self.delete_search(payload)
             except asyncio.TimeoutError:
@@ -323,12 +290,8 @@ class MapDatabase(commands.Cog):
         """ List all options for a category of map
 """
         # Get appropriate database connection
-        connections = {
-            "airship": self.bot.airship, "mirahq": self.bot.mirahq,
-            "polus": self.bot.polus, "theskeld": self.bot.theskeld
-        }
         mapname = ctx.command.full_parent_name.lower()
-        connection = connections.get(mapname)
+        connection = self.connections.get(mapname)
         # Get data from database
         category = category.lower()
         query = f"""
@@ -352,7 +315,7 @@ class MapDatabase(commands.Cog):
         embed.set_footer(text=ctx.command.full_parent_name)
         await ctx.channel.send(embed=embed)
 
-    async def retrieve_from_search(self, payload):
+    async def retrieve_from_search(self, payload, data):
         """ Retrieve data for current option of embed
 """
         # Process payload information
@@ -360,24 +323,31 @@ class MapDatabase(commands.Cog):
         message = await channel.fetch_message(payload.message_id)
         # Get map and category from embed
         footer_regex = re.compile(
-            fr"^({'|'.join([c.name for c in self.get_commands()])}):")
+            fr"^({'|'.join([c.name for c in self.get_commands()])}):"
+        )
         mapname = footer_regex.search(
-            message.embeds[0].footer.text).group(1)
+            message.embeds[0].footer.text
+        ).group(1)
         title_regex = re.compile(
-            r"^(.*):")
+            r"^(.*): (.*)")
         category = title_regex.search(
-            message.embeds[0].title).group(1).lower()
-        # Get data from embed from searches by payload
-        option = self.searches.get(payload.member.id).option
-        data = self.data[mapname.lower()][category][option]
+            message.embeds[0].title
+        ).group(1).lower()
+        option = title_regex.search(
+            message.embeds[0].title
+        ).group(2)
         # Edit embed to mimic retrieve command
         embed = discord.Embed(
-            title=f"{category.title()}: {option.title()}",
-            color=0x0000ff)
-        for item in data:
-            embed.add_field(name=item, value=data[item])
+            title=f"{category.title()}: {option}",
+            color=0x0000ff
+        )
+        for item in data[option]:
+            embed.add_field(
+                name=item.title(),
+                value=data[option][item]
+            )
         embed.set_footer(text=mapname)
-        image_name = f"{data['Name']}.png"
+        image_name = f"{option}.png"
         image_path = os.path.join(
             'data', mapname.lower(), category, image_name
         )
@@ -385,7 +355,6 @@ class MapDatabase(commands.Cog):
         embed.set_image(url=f"attachment://{image_name}")
         await channel.send(file=image, embed=embed)
         await message.delete()
-        del self.searches[payload.member.id]
 
     async def scroll(self, payload, data):
         """ Scroll embed from search command based on the emoji used
@@ -393,22 +362,13 @@ class MapDatabase(commands.Cog):
         channel = self.bot.get_channel(payload.channel_id)
         message = await channel.fetch_message(payload.message_id)
         embed = message.embeds[0]
-        # Validate member
         footer_regex = re.compile(
-            r"^(.*): Page [0-9]+/[0-9]+ \| ([0-9]*)"
+            fr"^({'|'.join([c.name for c in self.get_commands()])}):"
         )
-        if payload.member.id != int(
-                footer_regex.search(embed.footer.text).group(2)
-        ):
-            await message.remove_reaction(
-                payload.emoji, payload.member
-            )
-            return
-        mapname = footer_regex.search(embed.footer.text).group(1)
-        # Get current index and scroll according to emoji
         title_regex = re.compile(
             r"^(.*): (.*)"
         )
+        mapname = footer_regex.search(embed.footer.text).group(1)
         category = title_regex.search(embed.title).group(1)
         option = title_regex.search(embed.title).group(2)
         index = list(data).index(option)
@@ -417,7 +377,8 @@ class MapDatabase(commands.Cog):
             u'\u25b6': index + 1, u'\u23e9': index + 5, u'\u23ed': -1}
         index = scroll.get(payload.emoji.name) % len(data)
         embed, image = scrolling_embed(
-            payload.member, mapname, category, data, index=index)
+            mapname, category, data, index=index
+        )
         await message.edit(embed=embed)
         await message.remove_reaction(payload.emoji, payload.member)
 
@@ -429,19 +390,22 @@ class MapDatabase(commands.Cog):
         await message.delete()
 
 
-def scrolling_embed(member, mapname, category, data, *, index=0):
+def scrolling_embed(mapname, category, data, *, index=0):
     """ Create and embed to allow member to scroll data with
 """
-    option = data[category].get(list(data)[index])
+    option = list(data.values())[index]
     embed = discord.Embed(
-        title=f"{category.title()}: {option}",
+        title=f"{category.title()}: {option['name']}",
         color=0x0000ff
     )
     embed.set_footer(
-        text=f"{mapname}: Page {index+1}/{len(data)} | {member.id}"
+        text=f"{mapname}: Page {index+1}/{len(data)}"
     )
-    for item in data:
-        embed.add_field(name=item, value=data[item])
+    for item in option:
+        embed.add_field(
+            name=item.title(),
+            value=option[item]
+        )
     image_name = f"{mapname.lower()}.png"
     image_path = os.path.join('data', image_name)
     image = discord.File(image_path, image_name)
