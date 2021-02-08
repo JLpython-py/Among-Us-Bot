@@ -27,19 +27,25 @@ SOFTWARE.
 ==============================================================================
 """
 
+import asyncio
+import logging
 import os
 import re
 
 import discord
 from discord.ext import commands
 
+logging.basicConfig(
+    level=logging.INFO,
+    format=" %(asctim)s - %(levelname)s - %(message)s"
+)
+
 
 class MapDatabase(commands.Cog):
     """ Allow member to explore available information in Among Us
 """
-    def __init__(self, bot, data):
+    def __init__(self, bot):
         self.bot = bot
-        self.data = data
         self.searches = {}
 
     @commands.Cog.listener()
@@ -66,107 +72,191 @@ class MapDatabase(commands.Cog):
         elif payload.emoji.name == u'\u274c':
             await self.delete_search(payload)
 
-    @commands.group(name="MIRAHQ", case_insensitive=True, pass_context=True,
-                    aliases=["MIRA", "MH"])
+    @commands.group(
+        name="Airship", case_insensitive=True, pass_context=True,
+        aliases=["A"]
+    )
+    async def airship(self, ctx):
+        """ Command group to parse data/db/airship.sqlite
+"""
+        if ctx.invoked_subcommand is None:
+            await ctx.send("Invalid Airship command passed")
+
+    @airship.group(
+        name="retrieve", case_insensitive=True, pass_context=True,
+        aliases=["r"]
+    )
+    async def airship_retrieve(self, ctx, category, option):
+        """ Retrieve option for category in Airship database
+"""
+        await self.retrieve(ctx, category, option)
+
+    @airship.group(
+        name="search", case_insensitive=True, pass_context=True,
+        aliases=["s"]
+    )
+    async def airship_search(self, ctx, category):
+        """ Search options for category in Airship database
+"""
+        await self.search(ctx, category)
+
+    @airship.group(
+        name="listopts", case_insensitive=True, pass_context=True,
+        aliases=["ls"]
+    )
+    async def airship_listopts(self, ctx, category):
+        """ List options for category in Airship database
+"""
+        await self.listopts(ctx, category)
+
+    @commands.group(
+        name="MIRAHQ", case_insensitive=True, pass_context=True,
+        aliases=["MIRA", "MH"]
+    )
     async def mira_hq(self, ctx):
-        """ Command group to parse information from MIRA HQ data
+        """ Command group to parse data/db/mira_hq.sqlite
 """
         if ctx.invoked_subcommand is None:
             await ctx.send("Invalid MIRA HQ command passed")
 
-    @mira_hq.group(name="retrieve", pass_context=True, aliases=["r"])
+    @mira_hq.group(
+        name="retrieve", case_insensitive=True, pass_context=True,
+        aliases=["r"]
+    )
     async def mirahq_retrieve(self, ctx, category, option):
-        """ Retrieve option for category in MIRA HQ data
+        """ Retrieve option for category in MIRA HQ database
 """
         await self.retrieve(ctx, category, option)
 
-    @mira_hq.group(name="search", pass_context=True, aliases=["s"])
+    @mira_hq.group(
+        name="search", case_insensitive=True, pass_context=True,
+        aliases=["s"]
+    )
     async def mirahq_search(self, ctx, category):
-        """ Search options for category in MIRA HQ data
+        """ Search options for category in MIRA HQ database
 """
         await self.search(ctx, category)
 
-    @mira_hq.group(name="listopts", pass_context=True, aliases=["ls"])
+    @mira_hq.group(
+        name="listopts", case_insensitive=True, pass_context=True,
+        aliases=["ls"]
+    )
     async def mirahq_listopts(self, ctx, category):
-        """ List options for category in MIRA HQ data
+        """ List options for category in MIRA HQ database
 """
         await self.listopts(ctx, category)
 
-    @commands.group(name="Polus", case_insensitive=True, pass_context=True,
-                    aliases=["P"])
+    @commands.group(
+        name="Polus", case_insensitive=True, pass_context=True,
+        aliases=["P"]
+    )
     async def polus(self, ctx):
-        """ Command group to parse information from Polus data
+        """ Command group to parse data/db/polus.sqlite
 """
         if ctx.invoked_subcommand is None:
             await ctx.send("Invalid Polus command passed")
 
-    @polus.group(name="retrieve", pass_context=True, aliases=["r"])
+    @polus.group(
+        name="retrieve", case_insensitive=True, pass_context=True,
+        aliases=["r"]
+    )
     async def polus_retrieve(self, ctx, category, option):
-        """ Retrieve option for category in Polus data
+        """ Retrieve option for category in Polus database
 """
         await self.retrieve(ctx, category, option)
 
-    @polus.group(name="search", pass_context=True, aliases=["s"])
+    @polus.group(
+        name="search", case_insensitive=True, pass_context=True,
+        aliases=["s"]
+    )
     async def polus_search(self, ctx, category):
-        """ Search options for category in Polus data
+        """ Search options for category in Polus database
 """
         await self.search(ctx, category)
 
-    @polus.group(name="listopts", pass_context=True, aliases=["ls"])
+    @polus.group(
+        name="listopts", case_insensitive=True, pass_context=True,
+        aliases=["ls"]
+    )
     async def polus_listopts(self, ctx, category):
-        """ List options for category in Polus data
+        """ List options for category in Polus database
 """
         await self.listopts(ctx, category)
 
-    @commands.group(name="TheSkeld", case_insensitive=True, pass_context=True,
-                    aliases=["Skeld", "TS"])
+    @commands.group(
+        name="TheSkeld", case_insensitive=True, pass_context=True,
+        aliases=["Skeld", "TS"]
+    )
     async def the_skeld(self, ctx):
-        """ Command group to parse information from The Skeld data
+        """ Command group to parse data/db/theskeld.sqlite
 """
         if ctx.invoked_subcommand is None:
             await ctx.send("Invalid The Skeld command passed")
 
-    @the_skeld.group(name="retrieve", pass_context=True, aliases=["r"])
+    @the_skeld.group(
+        name="retrieve", case_insensitive=True, pass_context=True,
+        aliases=["r"]
+    )
     async def theskeld_retrieve(self, ctx, category, option):
-        """ Retrieve option for category in The Skeld data
+        """ Retrieve option for category in The Skeld database
 """
         await self.retrieve(ctx, category, option)
 
-    @the_skeld.group(name="search", pass_context=True, aliases=["s"])
+    @the_skeld.group(
+        name="search", case_insensitive=True, pass_context=True,
+        aliases=["s"]
+    )
     async def theskeld_search(self, ctx, category):
-        """ Search options for category in The Skeld data
+        """ Search options for category in The Skeld database
 """
         await self.search(ctx, category)
 
-    @the_skeld.group(name="listopts", pass_context=True, aliases=["ls"])
+    @the_skeld.group(
+        name="listopts", case_insensitive=True, pass_context=True,
+        aliases=["ls"]
+    )
     async def theskeld_listopts(self, ctx, category):
-        """ List options for category in The Skeld data
+        """ List options for category in The Skeld database
 """
         await self.listopts(ctx, category)
 
     async def retrieve(self, ctx, category, option):
         """ Retrieve data for option for category of map
 """
-        # Validate category and option
-        category, option = category.lower(), option.title()
+        # Get appropriate database connection
+        connections = {
+            "airship": self.bot.airship, "mirahq": self.bot.mirahq,
+            "polus": self.bot.polus, "theskeld": self.bot.theskeld
+        }
         mapname = ctx.command.full_parent_name.lower()
-        if category not in self.data[mapname]:
-            await ctx.send(f"`category={category}` is not valid")
-            return
-        if option not in self.data[mapname][category]:
-            await ctx.send(f"`option={option}` is not valid")
-            return
-        # Get data from category and option and send in embed
-        data = self.data[mapname][category][option]
+        connection = connections.get(mapname)
+        # Get data from database
+        category, option = category.lower(), option.title()
+        query = f"""
+        SELECT *
+        FROM {category}
+        WHERE name=?
+        """
+        columns, content = connection.execute_query(
+            query, "rr", option
+        )
+        data = dict(zip(columns, content[0]))
+        if not data:
+            await ctx.channel.send(
+                f"No results found [`category`={category}, `option`={option}]"
+            )
+        # Send data in embed
         embed = discord.Embed(
             title=f"{category.title()}: {option}",
-            color=0x0000ff)
+            color=0x0000ff
+        )
         for item in data:
             embed.add_field(name=item, value=data[item])
         embed.set_footer(text=ctx.command.full_parent_name)
-        image_name = f"{data['Name']}.png"
+        image_name = f"{data['name']}.png"
         image_path = os.path.join(
-            'data', mapname, category, image_name)
+            "data", mapname, category, image_name
+        )
         image = discord.File(image_path, image_name)
         embed.set_image(url=f"attachment://{image_name}")
         await ctx.channel.send(file=image, embed=embed)
@@ -174,47 +264,93 @@ class MapDatabase(commands.Cog):
     async def search(self, ctx, category):
         """ Allow member to scroll through options for category of map
 """
-        # Validate category
-        category = category.lower()
+        # Get appropriate database connection
+        connections = {
+            "airship": self.bot.airship, "mirahq": self.bot.mirahq,
+            "polus": self.bot.polus, "theskeld": self.bot.theskeld
+        }
         mapname = ctx.command.full_parent_name.lower()
-        if category not in self.data[mapname]:
-            await ctx.send(f"`category={category}` is not valid")
+        connection = connections.get(mapname)
+        # Get data from database
+        category = category.lower()
+        query = f"""
+        SELECT *
+        FROM {category}
+        """
+        columns, content = connection.execute_query(
+            query, "rr"
+        )
+        if not (columns or content):
+            await ctx.send(
+                f"No results found [`category`={category}]"
+            )
             return
-        # Delete any existing search
-        if ctx.author.id in self.searches:
-            embed = self.searches[ctx.author.id]
-            await embed.message.delete()
-            del self.searches[ctx.author.id]
+        data = {
+            d["name"]: d for d in
+            [dict(zip(columns, c)) for c in content]
+        }
         # Create embed for member to scroll data with
-        embed = ScrollingEmbed(
-            ctx.command.full_parent_name, category, self.data)
-        embed.manage_embed()
-        await embed.send_with_reactions(ctx.message)
-        self.searches.setdefault(ctx.author.id, embed)
+        embed, image = scrolling_embed(
+            ctx.author, ctx.command.full_parent_name, category, data
+        )
+        message = await send_with_reactions(ctx, embed, image)
+
+        def check(pay):
+            return pay.member.id == ctx.author.id
+
+        while True:
+            try:
+                payload = await self.bot.wait_for(
+                    "raw_reaction_add",
+                    timeout=60.0,
+                    check=check
+                )
+                if payload.emoji.name in [
+                    u'\u23ee', u'\u23ea', u'\u25c0', u'\u25b6', u'\u23e9',
+                    u'\u23ed'
+                ]:
+                    await self.scroll(payload, data)
+                elif payload.emoji.name == u'\u2714':
+                    await self.retrieve_from_search(payload)
+                elif payload.emoji.name == u'\u274c':
+                    await self.delete_search(payload)
+            except asyncio.TimeoutError:
+                break
+        await message.clear_reactions()
+        await message.delete()
 
     async def listopts(self, ctx, category):
         """ List all options for a category of map
 """
-        # Validate category
-        category = category.lower()
+        # Get appropriate database connection
+        connections = {
+            "airship": self.bot.airship, "mirahq": self.bot.mirahq,
+            "polus": self.bot.polus, "theskeld": self.bot.theskeld
+        }
         mapname = ctx.command.full_parent_name.lower()
-        if category not in self.data[mapname]:
-            await ctx.send(f"`category={category}` is not valid")
+        connection = connections.get(mapname)
+        # Get data from database
+        category = category.lower()
+        query = f"""
+        SELECT *
+        FROM {category}
+        """
+        content = connection.execute_query(
+            query, "r"
+        )
+        if not content:
+            await ctx.channel.send(
+                f"No results found [`category`={category}]"
+            )
             return
-        # Get data for category and send all options in embed
-        data = self.data[mapname][category]
+        # Send data in embed
         embed = discord.Embed(
-            title=category.title(), color=0xff0000)
-        for item in data:
-            text = '\n'.join([
-                f"`{k}`: {v[:20]}..." for k, v in data[item].items()])
-            embed.add_field(name=item, value=text)
+            title=category.title(),
+            color=0xff0000,
+            description='\n'.join([f"-{r[0]}" for r in content])
+        )
         embed.set_footer(text=ctx.command.full_parent_name)
-        image_name = f"{mapname}.png"
-        image_path = os.path.join('data', image_name)
-        image = discord.File(image_path, image_name)
-        embed.set_image(url=f"attachment://{image_name}")
-        await ctx.channel.send(file=image, embed=embed)
+        await ctx.channel.send(embed=embed)
 
     async def retrieve_from_search(self, payload):
         """ Retrieve data for current option of embed
@@ -243,91 +379,87 @@ class MapDatabase(commands.Cog):
         embed.set_footer(text=mapname)
         image_name = f"{data['Name']}.png"
         image_path = os.path.join(
-            'data', mapname.lower(), category, image_name)
+            'data', mapname.lower(), category, image_name
+        )
         image = discord.File(image_path, image_name)
         embed.set_image(url=f"attachment://{image_name}")
         await channel.send(file=image, embed=embed)
         await message.delete()
         del self.searches[payload.member.id]
 
-    async def scroll(self, payload):
+    async def scroll(self, payload, data):
         """ Scroll embed from search command based on the emoji used
 """
-        embed = self.searches.get(payload.member.id)
-        await embed.scroll(payload)
+        channel = self.bot.get_channel(payload.channel_id)
+        message = await channel.fetch_message(payload.message_id)
+        embed = message.embeds[0]
+        # Validate member
+        footer_regex = re.compile(
+            r"^(.*): Page [0-9]+/[0-9]+ \| ([0-9]*)"
+        )
+        if payload.member.id != int(
+                footer_regex.search(embed.footer.text).group(2)
+        ):
+            await message.remove_reaction(
+                payload.emoji, payload.member
+            )
+            return
+        mapname = footer_regex.search(embed.footer.text).group(1)
+        # Get current index and scroll according to emoji
+        title_regex = re.compile(
+            r"^(.*): (.*)"
+        )
+        category = title_regex.search(embed.title).group(1)
+        option = title_regex.search(embed.title).group(2)
+        index = list(data).index(option)
+        scroll = {
+            u'\u23ee': 0, u'\u23ea': index - 5, u'\u25c0': index - 1,
+            u'\u25b6': index + 1, u'\u23e9': index + 5, u'\u23ed': -1}
+        index = scroll.get(payload.emoji.name) % len(data)
+        embed, image = scrolling_embed(
+            payload.member, mapname, category, data, index=index)
+        await message.edit(embed=embed)
+        await message.remove_reaction(payload.emoji, payload.member)
 
     async def delete_search(self, payload):
         """ Delete embed from search command
 """
-        embed = self.searches.get(payload.member.id)
-        await embed.message.delete()
-        del self.searches[payload.member.id]
+        channel = self.bot.get_channel(payload.channel_id)
+        message = await channel.fetch_message(payload.message_id)
+        await message.delete()
 
 
-class ScrollingEmbed:
-    """ Generate embed which a member can scroll by using reactions
+def scrolling_embed(member, mapname, category, data, *, index=0):
+    """ Create and embed to allow member to scroll data with
 """
-    def __init__(self, name, category, data):
-        self.name = name
-        self.category = category
-        self.items = data[self.name.lower()][self.category]
-        self.option = list(self.items)[0]
-        self.data = self.items.get(self.option)
+    option = data[category].get(list(data)[index])
+    embed = discord.Embed(
+        title=f"{category.title()}: {option}",
+        color=0x0000ff
+    )
+    embed.set_footer(
+        text=f"{mapname}: Page {index+1}/{len(data)} | {member.id}"
+    )
+    for item in data:
+        embed.add_field(name=item, value=data[item])
+    image_name = f"{mapname.lower()}.png"
+    image_path = os.path.join('data', image_name)
+    image = discord.File(image_path, image_name)
+    embed.set_image(url=f"attachment://{image_name}")
+    return embed, image
 
-        self.embed = None
-        self.image = None
-        self.message = None
-        self.memberid = 0
 
-    def manage_embed(self, index=0):
-        """ Edit the existing embed with new data
-"""
-        # Create embed with data in body and page number in footer
-        self.embed = discord.Embed(
-            title=f"{self.category.title()}: {self.option}",
-            color=0x0000ff)
-        self.embed.set_footer(
-            text=f"{self.name}: Page {index+1}/{len(self.items)}")
-        for item in self.data:
-            self.embed.add_field(name=item, value=self.data[item])
-        # Attach image to embed
-        image_name = f"{self.name.lower()}.png"
-        image_path = os.path.join('data', image_name)
-        self.image = discord.File(image_path, image_name)
-        self.embed.set_image(url=f"attachment://{image_name}")
-
-    async def send_with_reactions(self, message):
-        """ Send generated embed and react with designated emojis
-"""
-        self.memberid = message.author.id
-        self.message = await message.channel.send(
-            file=self.image, embed=self.embed)
-        reactions = [
-            u'\u23ee', u'\u23ea', u'\u25c0', u'\u25b6', u'\u23e9', u'\u23ed',
-            u'\u2714', u'\u274c']
-        for rxn in reactions:
-            await self.message.add_reaction(rxn)
-
-    async def scroll(self, payload):
-        """ Get new data based on emoji used
-"""
-        # Validate member who reacted requested embed
-        if payload.member.id != self.memberid:
-            await self.message.remove_reaction(
-                payload.emoji, payload.member)
-            return
-        # Get current index and scroll according to emoji
-        index = list(self.items).index(self.option)
-        scroll = {
-            u'\u23ee': 0, u'\u23ea': index-5, u'\u25c0': index-1,
-            u'\u25b6': index+1, u'\u23e9': index+5, u'\u23ed': -1}
-        index = scroll.get(payload.emoji.name) % len(self.items)
-        # Get new option and new data from new index
-        self.option = list(self.items)[index]
-        self.data = self.items.get(self.option)
-        self.manage_embed(index=index)
-        await self.message.edit(embed=self.embed)
-        await self.message.remove_reaction(payload.emoji, payload.member)
+async def send_with_reactions(ctx, embed, image):
+    message = await ctx.channel.send(
+        file=image, embed=embed
+    )
+    reactions = [
+        u'\u23ee', u'\u23ea', u'\u25c0', u'\u25b6', u'\u23e9', u'\u23ed',
+        u'\u2714', u'\u274c'
+    ]
+    for rxn in reactions:
+        await message.add_reaction(rxn)
+    return message
 
 
 def setup(bot):

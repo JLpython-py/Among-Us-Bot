@@ -47,7 +47,10 @@ def main():
     try:
         loop.run_forever()
     except KeyboardInterrupt:
-        bot.connection.close_connection()
+        bot.airship.close_connection()
+        bot.mirahq.close_connection()
+        bot.polus.close_connection()
+        bot.theskeld.close_connection()
 
 
 if __name__ == '__main__':
