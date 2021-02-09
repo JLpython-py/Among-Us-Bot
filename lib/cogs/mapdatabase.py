@@ -202,35 +202,28 @@ class MapDatabase(commands.Cog):
     async def retrieve(self, ctx, category, option):
         """ Retrieve data for option for category of map
 """
-        # Get appropriate database connection
-        mapname = ctx.command.full_parent_name.lower()
-        connection = self.connections.get(mapname)
         # Get data from database
+        conn = self.connections.get(ctx.command.full_parent_name.lower())
         category, option = category.lower(), option.title()
         query = f"""
         SELECT *
         FROM {category}
         WHERE name=?
         """
-        columns, content = connection.execute_query(
-            query, "rr", option
-        )
+        columns, content = conn.execute_query(query, "rr", option)
         data = dict(zip(columns, content[0]))
         if not data:
-            await ctx.channel.send(
-                f"No results found [`category`={category}, `option`={option}]"
-            )
+            await ctx.channel.send(f"No results found.")
         # Send data in embed
         embed = discord.Embed(
-            title=f"{category.title()}: {option}",
-            color=0x0000ff
+            title=f"{category.title()}: {option}", color=0x0000ff
         )
         for item in data:
-            embed.add_field(name=item, value=data[item])
+            embed.add_field(name=item.title(), value=data[item])
         embed.set_footer(text=ctx.command.full_parent_name)
         image_name = f"{data['name']}.png"
         image_path = os.path.join(
-            "data", mapname, category, image_name
+            "data", ctx.command.full_parent_name.lower(), category, image_name
         )
         image = discord.File(image_path, image_name)
         embed.set_image(url=f"attachment://{image_name}")
@@ -239,26 +232,19 @@ class MapDatabase(commands.Cog):
     async def search(self, ctx, category):
         """ Allow member to scroll through options for category of map
 """
-        # Get appropriate database connection
-        mapname = ctx.command.full_parent_name.lower()
-        connection = self.connections.get(mapname)
         # Get data from database
+        conn = self.connections.get(ctx.command.full_parent_name.lower())
         category = category.lower()
         query = f"""
         SELECT *
         FROM {category}
         """
-        columns, content = connection.execute_query(
-            query, "rr"
-        )
+        columns, content = conn.execute_query(query, "rr")
         if not (columns or content):
-            await ctx.send(
-                f"No results found [`category`={category}]"
-            )
+            await ctx.send(f"No results found [`category`={category}]")
             return
         data = {
-            d["name"]: d for d in
-            [dict(zip(columns, c)) for c in content]
+            d["name"]: d for d in [dict(zip(columns, c)) for c in content]
         }
         # Create embed for member to scroll data with
         embed, image = scrolling_embed(
@@ -268,8 +254,7 @@ class MapDatabase(commands.Cog):
         while True:
             try:
                 payload = await self.bot.wait_for(
-                    "raw_reaction_add",
-                    timeout=60.0,
+                    "raw_reaction_add", timeout=30.0,
                     check=lambda p: p.member.id == ctx.author.id
                 )
                 if payload.emoji.name in [
@@ -289,27 +274,20 @@ class MapDatabase(commands.Cog):
     async def listopts(self, ctx, category):
         """ List all options for a category of map
 """
-        # Get appropriate database connection
-        mapname = ctx.command.full_parent_name.lower()
-        connection = self.connections.get(mapname)
         # Get data from database
+        conn = self.connections.get(ctx.command.full_parent_name.lower())
         category = category.lower()
         query = f"""
         SELECT *
         FROM {category}
         """
-        content = connection.execute_query(
-            query, "r"
-        )
+        content = conn.execute_query(query, "r")
         if not content:
-            await ctx.channel.send(
-                f"No results found [`category`={category}]"
-            )
+            await ctx.channel.send(f"No results found.")
             return
         # Send data in embed
         embed = discord.Embed(
-            title=category.title(),
-            color=0xff0000,
+            title=category.title(), color=0xff0000,
             description='\n'.join([f"-{r[0]}" for r in content])
         )
         embed.set_footer(text=ctx.command.full_parent_name)
@@ -321,35 +299,27 @@ class MapDatabase(commands.Cog):
         # Process payload information
         channel = self.bot.get_channel(payload.channel_id)
         message = await channel.fetch_message(payload.message_id)
-        # Get map and category from embed
+        embed = message.embeds[0]
+        # Get current option information from embed
         footer_regex = re.compile(
             fr"^({'|'.join([c.name for c in self.get_commands()])}):"
         )
-        mapname = footer_regex.search(
-            message.embeds[0].footer.text
-        ).group(1)
-        title_regex = re.compile(
-            r"^(.*): (.*)")
-        category = title_regex.search(
-            message.embeds[0].title
-        ).group(1).lower()
-        option = title_regex.search(
-            message.embeds[0].title
-        ).group(2)
+        title_regex = re.compile(r"^(.*): (.*)")
+        mapname = footer_regex.search(embed.footer.text).group(1)
+        category = title_regex.search(embed.title).group(1)
+        option = title_regex.search(embed.title).group(2)
         # Edit embed to mimic retrieve command
         embed = discord.Embed(
-            title=f"{category.title()}: {option}",
-            color=0x0000ff
+            title=f"{category}: {option}", color=0x0000ff
         )
         for item in data[option]:
             embed.add_field(
-                name=item.title(),
-                value=data[option][item]
+                name=item.title(), value=data[option][item]
             )
         embed.set_footer(text=mapname)
         image_name = f"{option}.png"
         image_path = os.path.join(
-            'data', mapname.lower(), category, image_name
+            'data', mapname.lower(), category.lower(), image_name
         )
         image = discord.File(image_path, image_name)
         embed.set_image(url=f"attachment://{image_name}")
@@ -359,9 +329,11 @@ class MapDatabase(commands.Cog):
     async def scroll(self, payload, data):
         """ Scroll embed from search command based on the emoji used
 """
+        # Process payload information
         channel = self.bot.get_channel(payload.channel_id)
         message = await channel.fetch_message(payload.message_id)
         embed = message.embeds[0]
+        # Get current option information from embed
         footer_regex = re.compile(
             fr"^({'|'.join([c.name for c in self.get_commands()])}):"
         )
@@ -371,14 +343,15 @@ class MapDatabase(commands.Cog):
         mapname = footer_regex.search(embed.footer.text).group(1)
         category = title_regex.search(embed.title).group(1)
         option = title_regex.search(embed.title).group(2)
+        # Get current index and scroll appropriately
         index = list(data).index(option)
         scroll = {
             u'\u23ee': 0, u'\u23ea': index - 5, u'\u25c0': index - 1,
             u'\u25b6': index + 1, u'\u23e9': index + 5, u'\u23ed': -1}
         index = scroll.get(payload.emoji.name) % len(data)
-        embed, image = scrolling_embed(
+        embed = scrolling_embed(
             mapname, category, data, index=index
-        )
+        )[0]
         await message.edit(embed=embed)
         await message.remove_reaction(payload.emoji, payload.member)
 
@@ -393,19 +366,22 @@ class MapDatabase(commands.Cog):
 def scrolling_embed(mapname, category, data, *, index=0):
     """ Create and embed to allow member to scroll data with
 """
-    option = list(data.values())[index]
+    # Get current option data
+    option_data = list(data.values())[index]
+    # Send data in embed
     embed = discord.Embed(
-        title=f"{category.title()}: {option['name']}",
+        title=f"{category.title()}: {option_data['name']}",
         color=0x0000ff
     )
     embed.set_footer(
         text=f"{mapname}: Page {index+1}/{len(data)}"
     )
-    for item in option:
+    for item in option_data:
         embed.add_field(
             name=item.title(),
-            value=option[item]
+            value=option_data[item]
         )
+    # Attach map logo image
     image_name = f"{mapname.lower()}.png"
     image_path = os.path.join('data', image_name)
     image = discord.File(image_path, image_name)
@@ -414,9 +390,13 @@ def scrolling_embed(mapname, category, data, *, index=0):
 
 
 async def send_with_reactions(ctx, embed, image):
+    """ Send message with reactions for member to scroll data with
+"""
+    # Send image and embed
     message = await ctx.channel.send(
         file=image, embed=embed
     )
+    # Add scroll control reactions
     reactions = [
         u'\u23ee', u'\u23ea', u'\u25c0', u'\u25b6', u'\u23e9', u'\u23ed',
         u'\u2714', u'\u274c'
@@ -427,6 +407,6 @@ async def send_with_reactions(ctx, embed, image):
 
 
 def setup(bot):
-    """ Allow lib.bot.__init__.py to add MapDatabase cog
+    """ Add MapDatabase cog
 """
     bot.add_cog(MapDatabase(bot))

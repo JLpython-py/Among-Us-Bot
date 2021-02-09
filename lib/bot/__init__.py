@@ -49,7 +49,8 @@ class BotRoot(commands.Bot):
         intents.members = True
         intents.guilds = True
         super().__init__(
-            command_prefix=prefix, intents=intents
+            command_prefix=prefix, case_insensitive=True,
+            intents=intents
         )
         self.airship = db.AirshipDB()
         self.mirahq = db.MIRAHQDB()

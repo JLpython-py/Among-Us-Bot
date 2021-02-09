@@ -37,13 +37,6 @@ from lib.db import db
 
 class TestRunBot(unittest.TestCase):
 
-    def setUp(self):
-        self.connection = db.DBConnection()
-
-    def tearDown(self):
-        self.connection.execute_query("DELETE FROM preferences", "w")
-        self.connection.close_connection()
-
     def test_run_bot(self):
         token = os.environ.get("token", None)
         if token is None:
@@ -57,7 +50,10 @@ class TestRunBot(unittest.TestCase):
             loop.run_forever()
         except KeyboardInterrupt:
             loop.close()
-            bot.connection.close_connection()
+            bot.airship.close_connection()
+            bot.mirahq.close_connection()
+            bot.polus.close_connection()
+            bot.theskeld.close_connection()
 
 
 if __name__ == '__main__':
