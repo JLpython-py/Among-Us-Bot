@@ -31,6 +31,7 @@ import asyncio
 import logging
 import os
 import re
+import sqlite3
 
 import discord
 from discord.ext import commands
@@ -46,10 +47,10 @@ class MapDatabase(commands.Cog):
 """
     def __init__(self, bot):
         self.bot = bot
-        self.connections = {
-            "airship": self.bot.airship, "mirahq": self.bot.mirahq,
-            "polus": self.bot.polus, "theskeld": self.bot.theskeld
-        }
+        self.airship = DatabaseParser(self.bot.airship, self.bot)
+        self.mira_hq = DatabaseParser(self.bot.mirahq, self.bot)
+        self.polus = DatabaseParser(self.bot.polus, self.bot)
+        self.the_skeld = DatabaseParser(self.bot.theskeld, self.bot)
 
     @commands.group(
         name="Airship", case_insensitive=True, pass_context=True,
@@ -68,7 +69,7 @@ class MapDatabase(commands.Cog):
     async def airship_retrieve(self, ctx, category, option):
         """ Retrieve option for category in Airship database
 """
-        await self.retrieve(ctx, category, option)
+        await self.airship.retrieve(ctx, category, option)
 
     @airship.group(
         name="search", case_insensitive=True, pass_context=True,
@@ -77,7 +78,7 @@ class MapDatabase(commands.Cog):
     async def airship_search(self, ctx, category):
         """ Search options for category in Airship database
 """
-        await self.search(ctx, category)
+        await self.airship.search(ctx, category)
 
     @airship.group(
         name="listopts", case_insensitive=True, pass_context=True,
@@ -86,7 +87,7 @@ class MapDatabase(commands.Cog):
     async def airship_listopts(self, ctx, category):
         """ List options for category in Airship database
 """
-        await self.listopts(ctx, category)
+        await self.airship.listopts(ctx, category)
 
     @commands.group(
         name="MIRAHQ", case_insensitive=True, pass_context=True,
@@ -105,7 +106,7 @@ class MapDatabase(commands.Cog):
     async def mirahq_retrieve(self, ctx, category, option):
         """ Retrieve option for category in MIRA HQ database
 """
-        await self.retrieve(ctx, category, option)
+        await self.mira_hq.retrieve(ctx, category, option)
 
     @mira_hq.group(
         name="search", case_insensitive=True, pass_context=True,
@@ -114,7 +115,7 @@ class MapDatabase(commands.Cog):
     async def mirahq_search(self, ctx, category):
         """ Search options for category in MIRA HQ database
 """
-        await self.search(ctx, category)
+        await self.mira_hq.search(ctx, category)
 
     @mira_hq.group(
         name="listopts", case_insensitive=True, pass_context=True,
@@ -123,7 +124,7 @@ class MapDatabase(commands.Cog):
     async def mirahq_listopts(self, ctx, category):
         """ List options for category in MIRA HQ database
 """
-        await self.listopts(ctx, category)
+        await self.mira_hq.listopts(ctx, category)
 
     @commands.group(
         name="Polus", case_insensitive=True, pass_context=True,
@@ -142,7 +143,7 @@ class MapDatabase(commands.Cog):
     async def polus_retrieve(self, ctx, category, option):
         """ Retrieve option for category in Polus database
 """
-        await self.retrieve(ctx, category, option)
+        await self.polus.retrieve(ctx, category, option)
 
     @polus.group(
         name="search", case_insensitive=True, pass_context=True,
@@ -151,7 +152,7 @@ class MapDatabase(commands.Cog):
     async def polus_search(self, ctx, category):
         """ Search options for category in Polus database
 """
-        await self.search(ctx, category)
+        await self.polus.search(ctx, category)
 
     @polus.group(
         name="listopts", case_insensitive=True, pass_context=True,
@@ -160,7 +161,7 @@ class MapDatabase(commands.Cog):
     async def polus_listopts(self, ctx, category):
         """ List options for category in Polus database
 """
-        await self.listopts(ctx, category)
+        await self.polus.listopts(ctx, category)
 
     @commands.group(
         name="TheSkeld", case_insensitive=True, pass_context=True,
@@ -179,7 +180,7 @@ class MapDatabase(commands.Cog):
     async def theskeld_retrieve(self, ctx, category, option):
         """ Retrieve option for category in The Skeld database
 """
-        await self.retrieve(ctx, category, option)
+        await self.the_skeld.retrieve(ctx, category, option)
 
     @the_skeld.group(
         name="search", case_insensitive=True, pass_context=True,
@@ -188,7 +189,7 @@ class MapDatabase(commands.Cog):
     async def theskeld_search(self, ctx, category):
         """ Search options for category in The Skeld database
 """
-        await self.search(ctx, category)
+        await self.the_skeld.search(ctx, category)
 
     @the_skeld.group(
         name="listopts", case_insensitive=True, pass_context=True,
@@ -197,20 +198,27 @@ class MapDatabase(commands.Cog):
     async def theskeld_listopts(self, ctx, category):
         """ List options for category in The Skeld database
 """
-        await self.listopts(ctx, category)
+        await self.the_skeld.listopts(ctx, category)
+
+
+class DatabaseParser:
+
+    def __init__(self, database, bot):
+        self.database = database
+        self.bot = bot
 
     async def retrieve(self, ctx, category, option):
-        """ Retrieve data for option for category of map
-"""
-        # Get data from database
-        conn = self.connections.get(ctx.command.full_parent_name.lower())
         category, option = category.lower(), option.title()
         query = f"""
-        SELECT *
-        FROM {category}
-        WHERE name=?
-        """
-        columns, content = conn.execute_query(query, "rr", option)
+                SELECT *
+                FROM {category}
+                WHERE name=?
+                """
+        try:
+            columns, content = self.database.execute_query(query, "rr", option)
+        except sqlite3.OperationalError:
+            await ctx.channel.send(f"`{category}` is not valid.")
+            return
         data = dict(zip(columns, content[0]))
         if not data:
             await ctx.channel.send(f"No results found.")
@@ -233,13 +241,16 @@ class MapDatabase(commands.Cog):
         """ Allow member to scroll through options for category of map
 """
         # Get data from database
-        conn = self.connections.get(ctx.command.full_parent_name.lower())
         category = category.lower()
         query = f"""
         SELECT *
         FROM {category}
         """
-        columns, content = conn.execute_query(query, "rr")
+        try:
+            columns, content = self.database.execute_query(query, "rr")
+        except sqlite3.OperationalError:
+            await ctx.channel.send(f"`{category}` is not valid.")
+            return
         if not (columns or content):
             await ctx.send(f"No results found [`category`={category}]")
             return
@@ -275,13 +286,16 @@ class MapDatabase(commands.Cog):
         """ List all options for a category of map
 """
         # Get data from database
-        conn = self.connections.get(ctx.command.full_parent_name.lower())
         category = category.lower()
         query = f"""
         SELECT *
         FROM {category}
         """
-        content = conn.execute_query(query, "r")
+        try:
+            content = self.database.execute_query(query, "r")
+        except sqlite3.OperationalError:
+            await ctx.channel.send(f"`{category}` is not valid.")
+            return
         if not content:
             await ctx.channel.send(f"No results found.")
             return
@@ -302,7 +316,8 @@ class MapDatabase(commands.Cog):
         embed = message.embeds[0]
         # Get current option information from embed
         footer_regex = re.compile(
-            fr"^({'|'.join([c.name for c in self.get_commands()])}):"
+            r"(Airship|MIRAHQ|Polus|TheSkeld)",
+            re.IGNORECASE
         )
         title_regex = re.compile(r"^(.*): (.*)")
         mapname = footer_regex.search(embed.footer.text).group(1)
@@ -335,7 +350,8 @@ class MapDatabase(commands.Cog):
         embed = message.embeds[0]
         # Get current option information from embed
         footer_regex = re.compile(
-            fr"^({'|'.join([c.name for c in self.get_commands()])}):"
+            r"(Airship|MIRAHQ|Polus|TheSkeld)",
+            re.IGNORECASE
         )
         title_regex = re.compile(
             r"^(.*): (.*)"
