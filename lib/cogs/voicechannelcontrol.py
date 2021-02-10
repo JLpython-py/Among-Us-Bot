@@ -277,7 +277,7 @@ class VoiceChannelControl(commands.Cog):
             for c in self.claims[payload.member.id]
         ]
         # Get all members who can be moved (no claims)
-        available_members = [m for m in game.members][:10]  # if m.id not in self.claims
+        available_members = [m for m in game.members if m.id not in self.claims][:10]
         if not available_members:
             msg = await channel.send("There are no members which can be moved")
             await asyncio.sleep(5)
@@ -331,10 +331,65 @@ class VoiceChannelControl(commands.Cog):
         await message.delete()
 
     async def member_alive(self, payload):
+        # Get channel of payload and claimed game, ghost channels
+        channel = self.bot.get_channel(payload.channel_id)
+        guild = self.bot.get_guild(payload.guild_id)
         game, ghost = [
             self.bot.get_channel(id=c)
             for c in self.claims[payload.member.id]
         ]
+        # Get all members who can be moved
+        if not ghost.members:
+            msg = await channel.send("There are no members which can be moved")
+            await asyncio.sleep(5)
+            await msg.delete()
+            return
+        # Send embed with options and reactions to move
+        embed = discord.Embed(
+            title="Move member to Game Lobby", color=0x0000ff
+        )
+        fields = {
+            "Select Members": '\n'.join([
+                f"{self.emojis[ghost.members.index(c)]} - {c}"
+                for c in ghost.members[:10]
+            ]),
+            "Moving Members": "Members will be moved once this message closes."
+        }
+        for field in fields:
+            embed.add_field(name=field, value=fields[field])
+        embed.set_footer(
+            text="This message will automatically close when stale for 5s."
+        )
+        message = await channel.send(embed=embed)
+        for mem in ghost.members[:10]:
+            await message.add_reaction(
+                self.emojis[ghost.members.index(mem)]
+            )
+        # Wait for member to add all reactions
+        while True:
+            try:
+                await self.bot.wait_for(
+                    "raw_reaction_add",
+                    timeout=5.0,
+                    check=lambda p: (
+                            p.member.id == payload.member.id
+                            and p.emoji.name in self.emojis
+                    )
+                )
+            except asyncio.TimeoutError:
+                break
+        # Parse through message reactions
+        message = await channel.fetch_message(message.id)
+        for rxn in message.reactions:
+            async for user in rxn.users():
+                mem = guild.get_member(user.id)
+                if mem.id == payload.member.id:
+                    break
+            member = ghost.members[
+                self.emojis.index(rxn.emoji)
+            ]
+            await member.move_to(game)
+        await message.delete()
 
     async def reset_game(self, payload):
         game, ghost = [
