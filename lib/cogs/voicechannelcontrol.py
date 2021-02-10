@@ -196,13 +196,25 @@ class VoiceChannelControl(commands.Cog):
                         check=lambda p: p.member.id == ctx.author.id
                     )
                     await check.delete()
+                    continue
                 except asyncio.TimeoutError:
+                    await check.clear_reactions()
+                    await check.edit(
+                        f"{ctx.author.mention}: Your claim was deleted due to inactivity"
+                    )
                     break
+            if payload.emoji.name in [u"\U0001F507", u"\U0001F508"]:
+                await self.manage_voices(payload)
+            elif payload.emoji.name == u"\U0001F47B":
+                await self.member_dead(payload)
+            elif payload.emoji.name == u"\U0001F3E5":
+                await self.member_alive(payload)
+            elif payload.emoji.name == u"\U0001F504":
+                await self.reset_game(payload)
+            elif payload.emoji.name == u"\U0001F3F3":
+                await self.yield_control(payload)
+                break
         await message.delete()
-        await check.edit(
-            f"{ctx.author.mention}: Your claim was deleted due to inactivity"
-        )
-        await check.clear_reactions()
         del self.claims[ctx.author.id]
 
     async def manage_voices(self, payload):
