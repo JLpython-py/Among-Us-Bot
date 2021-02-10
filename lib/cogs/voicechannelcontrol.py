@@ -29,7 +29,6 @@ SOFTWARE.
 
 import asyncio
 import logging
-import re
 
 import discord
 from discord.ext import commands
@@ -50,6 +49,22 @@ class VoiceChannelControl(commands.Cog):
             u'6\ufe0f\u20e3', u'7\ufe0f\u20e3', u'8\ufe0f\u20e3',
             u'9\ufe0f\u20e3']
         self.claims = {}
+
+    @commands.Cog.listener()
+    async def on_voice_state_update(self, member, before, after):
+        if member.id not in self.claims:
+            return
+        direct_message = await member.create_dm()
+        if before.channel and after.channel is None:
+            del self.claims[member.id]
+            await direct_message.send(
+                f"{member.mention}: All claims forcefully yielded after voice channel disconnect"
+            )
+        if after.afk:
+            del self.claims[member.id]
+            await direct_message.send(
+                f"{member.mention}: All claims forcefully yielded due to inactivity"
+            )
 
     @commands.command(name="claim", pass_context=True)
     async def claim(self, ctx):
@@ -145,7 +160,7 @@ class VoiceChannelControl(commands.Cog):
                 u"\U0001F507", u"\U0001F508", u"\U0001F3F3"
             ]
             fields = {
-                "Claimed": f"Game: {game.name}",
+                "Claimed": f"Game: `{game.name}`",
                 "Voice Channel Control": "\n".join([
                     "Mute All- :mute:",
                     "Unmute All - :speaker:",
@@ -159,7 +174,7 @@ class VoiceChannelControl(commands.Cog):
                 u"\U0001F3E5", u"\U0001F504", u"\U0001F3F3"
             ]
             fields = {
-                "Claimed": f"Game: {game.name}\nGhost: {ghost.name}",
+                "Claimed": f"Game: `{game.name}`\nGhost: `{ghost.name}`",
                 "Voice Channel Control": "\n".join([
                     "Mute All - :mute:",
                     "Unmute All - :speaker:",
@@ -200,7 +215,7 @@ class VoiceChannelControl(commands.Cog):
                 except asyncio.TimeoutError:
                     await check.clear_reactions()
                     await check.edit(
-                        f"{ctx.author.mention}: Your claim was deleted due to inactivity"
+                        f"{ctx.author.mention}: All claims forcefully yielded due to inactivity"
                     )
                     break
             if payload.emoji.name in [u"\U0001F507", u"\U0001F508"]:
@@ -212,13 +227,15 @@ class VoiceChannelControl(commands.Cog):
             elif payload.emoji.name == u"\U0001F504":
                 await self.reset_game(payload)
             elif payload.emoji.name == u"\U0001F3F3":
-                await self.yield_control(payload)
+                await ctx.channel.send(
+                    f"{ctx.author.mention}: All claims yielded successfully"
+                )
                 break
         await message.delete()
         del self.claims[ctx.author.id]
 
     async def manage_voices(self, payload):
-        channel = self.bot.get_chanel(payload.channel_id)
+        channel = self.bot.get_channel(payload.channel_id)
         message = await channel.fetch_message(payload.message_id)
         # Manage the voices of the members based on the emoji used
         emojis = {"\U0001F507": True, "\U0001F508": False}
@@ -246,29 +263,6 @@ class VoiceChannelControl(commands.Cog):
 
     async def reset_game(self, payload):
         pass
-
-    async def yield_control(self, payload):
-        """ Yield control of a claimed voice channel
-"""
-        channel = self.bot.get_channel(payload.channel_id)
-        message = await channel.fetch_message(payload.member.id)
-        # Delete voice control message
-        voice_channel = self.bot.get_channel(
-            self.claims.get(payload.member.id)
-        )
-        embed = discord.Embed(
-            title="Voice Channel Control Panel Close",
-            color=0x0000ff
-        )
-        embed.add_field(
-            name="Yielded",
-            value=f"You have successfully yielded {voice_channel.name}"
-        )
-        await message.edit(embed=embed)
-        await message.clear_reactions()
-        del self.claims[payload.member.id]
-        await asyncio.sleep(10)
-        await message.delete()
 
 
 def setup(bot):
