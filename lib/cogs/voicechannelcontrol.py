@@ -99,7 +99,10 @@ class VoiceChannelControl(commands.Cog):
             payload = await self.bot.wait_for(
                 "raw_reaction_add",
                 timeout=30.0,
-                check=lambda p: p.member.id == ctx.author.id
+                check=lambda p: (
+                        p.member.id == ctx.author.id
+                        and p.message_id == message.id
+                )
             )
             await message.delete()
         except asyncio.TimeoutError:
@@ -195,7 +198,10 @@ class VoiceChannelControl(commands.Cog):
         try:
             payload = await self.bot.wait_for(
                 "raw_reaction_add", timeout=30.0,
-                check=lambda p: p.member.id == ctx.author.id
+                check=lambda p: (
+                        p.member.id == ctx.author.id
+                        and p.message_id == message.id
+                )
             )
             await message.delete()
             return voice_channels[
@@ -263,7 +269,10 @@ class VoiceChannelControl(commands.Cog):
                 payload = await self.bot.wait_for(
                     "raw_reaction_add",
                     timeout=600,
-                    check=lambda p: p.member.id == ctx.author.id
+                    check=lambda p: (
+                            p.member.id == ctx.author.id
+                            and p.message_id == message.id
+                    )
                 )
             # Check if member is still actively using voice channel claim
             except asyncio.TimeoutError:
@@ -276,7 +285,10 @@ class VoiceChannelControl(commands.Cog):
                     await self.bot.wait_for(
                         "raw_reaction_add",
                         timeout=60.0,
-                        check=lambda p: p.member.id == ctx.author.id
+                        check=lambda p: (
+                                p.member.id == ctx.author.id
+                                and p.message_id == check.id
+                        )
                     )
                     await check.delete()
                     continue
@@ -358,7 +370,6 @@ class VoiceChannelControl(commands.Cog):
 """
         # Get channel of payload and claimed game, ghost channels
         channel = self.bot.get_channel(payload.channel_id)
-        guild = self.bot.get_guild(payload.guild_id)
         game, ghost = [
             self.bot.get_channel(id=c)
             for c in self.claims[payload.member.id]
@@ -399,6 +410,7 @@ class VoiceChannelControl(commands.Cog):
                     timeout=5.0,
                     check=lambda p: (
                         p.member.id == payload.member.id
+                        and p.message_id == message.id
                         and p.emoji.name in self.emojis
                     )
                 )
@@ -420,7 +432,6 @@ class VoiceChannelControl(commands.Cog):
 """
         # Get channel of payload and claimed game, ghost channels
         channel = self.bot.get_channel(payload.channel_id)
-        guild = self.bot.get_guild(payload.guild_id)
         game, ghost = [
             self.bot.get_channel(id=c)
             for c in self.claims[payload.member.id]
@@ -460,6 +471,7 @@ class VoiceChannelControl(commands.Cog):
                     timeout=5.0,
                     check=lambda p: (
                             p.member.id == payload.member.id
+                            and p.message_id == message.id
                             and p.emoji.name in self.emojis
                     )
                 )
