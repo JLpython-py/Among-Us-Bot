@@ -253,7 +253,7 @@ class VoiceChannelControl(commands.Cog):
         # Manage the voices of the members based on the emoji used
         emojis = {"\U0001F507": True, "\U0001F508": False}
         voice_channel = self.bot.get_channel(
-            self.claims.get(payload.member.id)
+            id=self.claims.get(payload.member.id)[0]
         )
         if not voice_channel.members:
             msg = await channel.send(
@@ -280,7 +280,7 @@ class VoiceChannelControl(commands.Cog):
         available_members = [m for m in game.members if m.id not in self.claims][:10]
         if not available_members:
             msg = await channel.send("There are no members which can be moved")
-            await asyncio.sleep(5)
+            await asyncio.sleep(2)
             await msg.delete()
             return
         # Send embed with options and reactions to move
@@ -341,7 +341,7 @@ class VoiceChannelControl(commands.Cog):
         # Get all members who can be moved
         if not ghost.members:
             msg = await channel.send("There are no members which can be moved")
-            await asyncio.sleep(5)
+            await asyncio.sleep(2)
             await msg.delete()
             return
         # Send embed with options and reactions to move
