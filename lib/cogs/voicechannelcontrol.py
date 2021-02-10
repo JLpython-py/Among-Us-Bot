@@ -75,33 +75,42 @@ class VoiceChannelControl(commands.Cog):
         if ctx.author.id in self.claims:
             await ctx.send("You already have a voice channel claim")
             return
+        embed = discord.Embed(
+            title="Select Lobby Claim Mode",
+            color=0x0000ff
+        )
+        embed.add_field(
+            name="Options",
+            value=":zero: - Game Lobby\n:one: - Game Lobby and Ghost Lobby"
+        )
+        message = await ctx.channel.send(embed=embed)
+        await message.add_reaction(u'0\ufe0f\u20e3')
+        await message.add_reaction(u'1\ufe0f\u20e3')
+        try:
+            payload = await self.bot.wait_for(
+                "raw_reaction_add",
+                timeout=30.0,
+                check=lambda p: p.member.id == ctx.author.id
+            )
+            await message.delete()
+        except asyncio.TimeoutError:
+            await message.delete()
+            return
+        if payload.emoji.name not in [u'0\ufe0f\u20e3', u'1\ufe0f\u20e3']:
+            return
         game = await self.claim_voice_channel(ctx, style="Game Lobby")
         if game is None:
             return
         self.claims[ctx.author.id] = [game]
-        message = await ctx.channel.send(
-            "Claim a voice channel for a Ghost Lobby? (y/n; Default: 'n')"
-        )
-        try:
-            msg = await self.bot.wait_for(
-                "message",
-                timeout=10.0,
-                check=lambda m: m.author.id == ctx.author.id
-            )
-            await message.delete()
-            await msg.delete()
-        except asyncio.TimeoutError:
+        if payload.emoji.name == u'0\ufe0f\u20e3':
             await self.voice_control(ctx, game=game, ghost=None)
-            return
-        if not msg.content.lower().startswith('y'):
-            await self.voice_control(ctx, game=game, ghost=None)
-            return
-        ghost = await self.claim_voice_channel(ctx, style="Ghost Lobby")
-        if ghost is None:
-            await self.voice_control(ctx, game=game, ghost=None)
-            return
-        self.claims[ctx.author.id].append(ghost)
-        await self.voice_control(ctx, game=game, ghost=ghost)
+        elif payload.emoji.name == u'1\ufe0f\u20e3':
+            ghost = await self.claim_voice_channel(ctx, style="Ghost Lobby")
+            if ghost is None:
+                await self.voice_control(ctx, game=game, ghost=None)
+                return
+            self.claims[ctx.author.id].append(ghost)
+            await self.voice_control(ctx, game=game, ghost=ghost)
 
     async def claim_voice_channel(self, ctx, *, style):
         """ Send an embed with reactions for member to designate a lobby VC
