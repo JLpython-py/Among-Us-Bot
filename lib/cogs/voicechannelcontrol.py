@@ -192,6 +192,9 @@ class VoiceChannelControl(commands.Cog):
         message = await ctx.channel.send(embed=embed)
         for rxn in reactions:
             await message.add_reaction(rxn)
+        await self.process_input(message, ctx)
+
+    async def process_input(self, message, ctx):
         while True:
             try:
                 payload = await self.bot.wait_for(
@@ -231,6 +234,7 @@ class VoiceChannelControl(commands.Cog):
                     f"{ctx.author.mention}: All claims yielded successfully"
                 )
                 break
+            await message.remove_reaction(payload.emoji, payload.member)
         await message.delete()
         del self.claims[ctx.author.id]
 
@@ -262,7 +266,14 @@ class VoiceChannelControl(commands.Cog):
         pass
 
     async def reset_game(self, payload):
-        pass
+        game = self.bot.get_channel(
+            id=self.claims.get(payload.member.id)[0]
+        )
+        ghost = self.bot.get_channel(
+            id=self.claims.get(payload.member.id)[1]
+        )
+        for mem in ghost.members:
+            await mem.move_to(game)
 
 
 def setup(bot):
