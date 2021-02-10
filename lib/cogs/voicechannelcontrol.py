@@ -184,13 +184,14 @@ class VoiceChannelControl(commands.Cog):
         # Check if Ghost Lobby is applicable
         if ghost is None:
             reactions = [
-                u"\U0001F507", u"\U0001F508", u"\U0001F3F3"
+                u"\U0001F507", u"\U0001F508", u"\U0001F515",
+                u"\U0001F514", u"\U0001F3F3"
             ]
             fields = {
                 "Claimed": f"Game: `{game.name}`",
                 "Voice Channel Control": "\n".join([
-                    "Mute All- :mute:",
-                    "Unmute All - :speaker:",
+                    "Mute/Un-Mute All - :mute:/:speaker:",
+                    "Deafen/Un-Deafen All - :bell:/:no_bell:",
                     "Yield - :flag_white:"
                 ])
             }
@@ -198,17 +199,18 @@ class VoiceChannelControl(commands.Cog):
             # Get Ghost Lobby voice channel
             ghost = self.bot.get_channel(id=ghost)
             reactions = [
-                u"\U0001F507", u"\U0001F508", u"\U0001F47B",
-                u"\U0001F3E5", u"\U0001F504", u"\U0001F3F3"
+                u"\U0001F507", u"\U0001F508", u"\U0001F515",
+                u"\U0001F514", u"\U0001F47B", u"\U0001F3E5",
+                u"\U0001F504", u"\U0001F3F3"
             ]
             fields = {
                 "Claimed": f"Game: `{game.name}`\nGhost: `{ghost.name}`",
                 "Voice Channel Control": "\n".join([
-                    "Mute All - :mute:",
-                    "Unmute All - :speaker:",
+                    "Mute/Un-Mute All - :mute:/:speaker:",
+                    "Deafen/Un-Deafen All - :bell:/:no_bell:",
                     "Select and Move Member(s) to Ghost - :ghost:",
                     "Select and Move Member(s) to Game - :hospital:",
-                    "Revert All Actions/Reset Game - :arrows_counterclockwise:"
+                    "Revert All Actions/Reset Game - :arrows_counterclockwise:",
                     "Yield - :flag_white:"
                 ])
             }
@@ -259,6 +261,8 @@ class VoiceChannelControl(commands.Cog):
             # Call functions according to emoji used
             if payload.emoji.name in [u"\U0001F507", u"\U0001F508"]:
                 await self.manage_mute(payload)
+            elif payload.emoji.name in [u"\U0001F515", u"\U0001F514"]:
+                await self.manage_deafen(payload)
             elif payload.emoji.name == u"\U0001F47B":
                 await self.member_dead(payload)
             elif payload.emoji.name == u"\U0001F3E5":
@@ -275,7 +279,7 @@ class VoiceChannelControl(commands.Cog):
         del self.claims[ctx.author.id]
 
     async def manage_mute(self, payload):
-        """ Mute/Unmute members in Game Lobby
+        """ Mute/Un-Mute members in Game Lobby
 """
         # Get information from payload
         channel = self.bot.get_channel(payload.channel_id)
@@ -285,7 +289,7 @@ class VoiceChannelControl(commands.Cog):
         # Verify members are present in the voice channel
         if not voice_channel.members:
             msg = await channel.send(
-                f"there are no members in {voice_channel.name}"
+                f"There are no members in {voice_channel.name}"
             )
             await asyncio.sleep(2)
             await msg.delete()
@@ -295,6 +299,29 @@ class VoiceChannelControl(commands.Cog):
             for member in voice_channel.members:
                 await member.edit(
                     mute=emojis.get(payload.emoji.name)
+                )
+
+    async def manage_deafen(self, payload):
+        """ Deafen/Un-Deafen members in Game Lobby
+"""
+        # Get information from payload
+        channel = self.bot.get_channel(payload.channel_id)
+        voice_channel = self.bot.get_channel(
+            id=self.claims.get(payload.member.id)[0]
+        )
+        # Verify members are present in the voice channel
+        if not voice_channel.members:
+            msg = await channel.send(
+                f"There are no members in {voice_channel.name}"
+            )
+            await asyncio.sleep(2)
+            await msg.delete()
+        # Edit all members' voices according to the emoji used
+        else:
+            emojis = {u"\U0001F515": True, u"\U0001F514": False}
+            for member in voice_channel.members:
+                await member.edit(
+                    deafen=emojis.get(payload.emoji.name)
                 )
 
     async def member_dead(self, payload):
