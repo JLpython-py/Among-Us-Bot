@@ -271,12 +271,13 @@ class VoiceChannelControl(commands.Cog):
     async def member_dead(self, payload):
         # Get channel of payload and claimed game, ghost channels
         channel = self.bot.get_channel(payload.channel_id)
+        guild = self.bot.get_guild(payload.guild_id)
         game, ghost = [
             self.bot.get_channel(id=c)
             for c in self.claims[payload.member.id]
         ]
         # Get all members who can be moved (no claims)
-        available_members = [m for m in game.members if m.id not in self.claims][:10]
+        available_members = [m for m in game.members][:10]  # if m.id not in self.claims
         if not available_members:
             msg = await channel.send("There are no members which can be moved")
             await asyncio.sleep(5)
@@ -296,20 +297,19 @@ class VoiceChannelControl(commands.Cog):
         for field in fields:
             embed.add_field(name=field, value=fields[field])
         embed.set_footer(
-            text="This message will automatically close when stale for 10.0s."
+            text="This message will automatically close when stale for 5s."
         )
         message = await channel.send(embed=embed)
         for mem in available_members[:10]:
             await message.add_reaction(
                 self.emojis[available_members.index(mem)]
             )
-
-        move_members = []
+        # Wait for member to add all reactions
         while True:
             try:
                 await self.bot.wait_for(
                     "raw_reaction_add",
-                    timeout=10.0,
+                    timeout=5.0,
                     check=lambda p: (
                         p.member.id == payload.member.id
                         and p.emoji.name in self.emojis
@@ -317,15 +317,17 @@ class VoiceChannelControl(commands.Cog):
                 )
             except asyncio.TimeoutError:
                 break
-            member = available_members[
-                self.emojis.index(payload.emoji.name)
-            ]
-            move_members.append(member)
+        # Parse through message reactions
+        message = await channel.fetch_message(message.id)
         for rxn in message.reactions:
+            async for user in rxn.users():
+                mem = guild.get_member(user.id)
+                if mem.id == payload.member.id:
+                    break
             member = available_members[
-                self.emojis.index(rxn.emoji.name)
+                self.emojis.index(rxn.emoji)
             ]
-            member.move_to(ghost)
+            await member.move_to(ghost)
         await message.delete()
 
     async def member_alive(self, payload):
