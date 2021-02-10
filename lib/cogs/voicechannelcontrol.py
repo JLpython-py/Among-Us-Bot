@@ -51,30 +51,6 @@ class VoiceChannelControl(commands.Cog):
             u'9\ufe0f\u20e3']
         self.claims = {}
 
-    @commands.Cog.listener()
-    async def on_raw_reaction_add(self, payload):
-        """ Listen for member using emojis to control others members' voices
-"""
-        logging.info("Raw Reaction Add: %s", payload)
-        if payload.member.bot:
-            return
-        channel = self.bot.get_channel(payload.channel_id)
-        message = await channel.fetch_message(payload.message_id)
-        embed = message.embeds[0]
-        if message.author.id != self.bot.user.id or\
-           "VoiceChannelControl" not in embed.footer.text:
-            return
-        if payload.emoji.name in [u"\U0001F507", u"\U0001F508"]:
-            await self.manage_voices(payload)
-        elif payload.emoji.name == u"\U0001F47B":
-            await self.member_dead(payload)
-        elif payload.emoji.name == u"\U0001F3E5":
-            await self.member_alive(payload)
-        elif payload.emoji.name == u"\U0001F504":
-            await self.reset_game(payload)
-        elif payload.emoji.name == u"\U0001F3F3":
-            await self.yield_control(payload)
-
     @commands.command(name="claim", pass_context=True)
     async def claim(self, ctx):
         """ Invoke a claim request panel
@@ -84,27 +60,49 @@ class VoiceChannelControl(commands.Cog):
         if ctx.author.id in self.claims:
             await ctx.send("You already have a voice channel claim")
             return
-        game_pay = await self.claim_voice_channel(
-            ctx, style="Game Lobby"
-        )
-        if game_pay is None:
+        game = await self.claim_voice_channel(ctx, style="Game Lobby")
+        if game is None:
             return
-        ghost_pay = await self.claim_voice_channel(
-            ctx, style="Ghost Lobby"
+        self.claims[ctx.author.id] = [game]
+        message = await ctx.channel.send(
+            "Claim a voice channel for a Ghost Lobby? (y/n; Default: 'n')"
         )
-        if ghost_pay is None:
+        try:
+            msg = await self.bot.wait_for(
+                "message",
+                timeout=10.0,
+                check=lambda m: m.author.id == ctx.author.id
+            )
+            await message.delete()
+            await msg.delete()
+        except asyncio.TimeoutError:
+            await self.voice_control(ctx, game=game, ghost=None)
             return
-        await self.voice_control(ctx)
+        if not msg.content.lower().startswith('y'):
+            await self.voice_control(ctx, game=game, ghost=None)
+            return
+        ghost = await self.claim_voice_channel(ctx, style="Ghost Lobby")
+        if ghost is None:
+            await self.voice_control(ctx, game=game, ghost=None)
+            return
+        self.claims[ctx.author.id].append(ghost)
+        await self.voice_control(ctx, game=game, ghost=ghost)
 
     async def claim_voice_channel(self, ctx, *, style):
         """ Send an embed with reactions for member to designate a lobby VC
 """
-        def check(pay):
-            return pay.member.id == ctx.author.id
-
-        voice_channels = ctx.guild.voice_channels[:10]\
-            if len(ctx.guild.voice_channels) > 10\
-            else ctx.guild.voice_channels
+        claimed = []
+        for claim in self.claims.values():
+            claimed.extend(claim)
+        voice_channels = [
+            c for c in ctx.guild.voice_channels
+            if c.id not in claimed
+        ][:10]
+        if not voice_channels:
+            await ctx.channel.send(
+                "There are no available voice channels to claim."
+            )
+            return
         embed = discord.Embed(
             title=f"Claim a Voice Channel for a {style}",
             color=0x0000ff
@@ -115,7 +113,7 @@ class VoiceChannelControl(commands.Cog):
                 for c in voice_channels
             ]),
             "Claim": "Use the reactions below to claim a voice channel",
-            "Cancel": "This message will automatically close after 60s"
+            "Cancel": "This message will automatically close after 30s"
         }
         for field in fields:
             embed.add_field(name=field, value=fields[field])
@@ -123,42 +121,62 @@ class VoiceChannelControl(commands.Cog):
             text=f"VoiceChannelControl | {ctx.author.id}"
         )
         message = await ctx.channel.send(embed=embed)
-        for channel in voice_channels:
-            await message.add_reactions(
-                self.emojis[voice_channels.index(channel)]
+        for chan in voice_channels:
+            await message.add_reaction(
+                self.emojis[voice_channels.index(chan)]
             )
         try:
             payload = await self.bot.wait_for(
-                "raw_reaction_add", timeout=60.0,
-                check=check
+                "raw_reaction_add", timeout=30.0,
+                check=lambda p: p.member.id == ctx.author.id
             )
-            return payload
-        except asyncio.TimeoutError:
             await message.delete()
+        except asyncio.TimeoutError:
+            return
+        return voice_channels[
+            self.emojis.index(payload.emoji.name)
+        ].id
 
-    async def voice_control(self, payload):
-        voice_channel = payload.member.guild.voice_channels[
-            self.emojis.index(payload.emoji.name)]
-        channel = self.bot.get_channel(payload.channel_id)
-        message = await channel.fetch_message(payload.message_id)
-        self.claims.setdefault(payload.member.id, voice_channel.id)
+    async def voice_control(self, ctx, game, ghost):
+        # Get applicable voice channels and appropriate reactions
+        game = self.bot.get_channel(id=game)
+        if ghost is None:
+            reactions = [
+                u"\U0001F507", u"\U0001F508", u"\U0001F3F3"
+            ]
+            fields = {
+                "Claimed": f"Game: {game.name}",
+                "Voice Channel Control": "\n".join([
+                    "Mute All- :mute:",
+                    "Unmute All - :speaker:",
+                    "Yield - :flag_white:"
+                ])
+            }
+        else:
+            ghost = self.bot.get_channel(id=ghost)
+            reactions = [
+                u"\U0001F507", u"\U0001F508", u"\U0001F47B",
+                u"\U0001F3E5", u"\U0001F504", u"\U0001F3F3"
+            ]
+            fields = {
+                "Claimed": f"Game: {game.name}\nGhost: {ghost.name}",
+                "Voice Channel Control": "\n".join([
+                    "Mute All - :mute:",
+                    "Unmute All - :speaker:",
+                    "Select and Move Member to Ghost - :ghost:",
+                    "Select and Move Member to Game - :hospital:",
+                    "Revert All Actions/Reset Game - :arrows_counterclockwise:"
+                    "Yield - :flag_white:"
+                ])
+            }
         embed = discord.Embed(
             title="Voice Channel Control", color=0x0000ff)
-        fields = {
-            "Claimed": f"You have successfully claimed {voice_channel.name}",
-            "Voice Channel Control": '\n'.join([
-                "Mute all - :mute:", "Unmute all - :speaker:",
-                "Yield - :flag_white:"])}
         for field in fields:
             embed.add_field(name=field, value=fields[field])
         embed.set_footer(text="VoiceChannelControl")
-        await message.edit(embed=embed)
-        await message.clear_reactions()
-        reactions = [
-            u"\U0001F507", u"\U0001F508", u"\U0001F47B",
-            u"\U0001F3E5", u"\U0001F504", u"\U0001F3F3"]
-        for reaction in reactions:
-            await message.add_reaction(reaction)
+        message = await ctx.channel.send(embed=embed)
+        for rxn in reactions:
+            await message.add_reaction(rxn)
 
     async def cancel_claim(self, payload):
         """ Cancel member request to claim a voice channel
