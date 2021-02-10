@@ -1,7 +1,0 @@
-Name,Type,Locations,Severity
-View Admin Map,Surveillance,Admin,N/A
-Check Sensors,Surveillance,Communications,N/A
-Fix Communications Sabotage,Fix Sabotage,"Communications, Office",Major
-Fix Lights,Fix Sabotage,Office,Major
-Fix O2 Depletion,Fix Sabotage,"Greenhouse, Launchpad",Fatal
-Fix Reactor Meltdown,Fix Sabotage,"Reactor(E), Reactor(W)",Fatal
