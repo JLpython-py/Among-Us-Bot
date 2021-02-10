@@ -72,7 +72,9 @@ class VoiceChannelControl(commands.Cog):
                 f"{member.mention}: All claims forcefully yielded due to inactivity"
             )
 
-    @commands.command(name="claim", pass_context=True)
+    @commands.command(
+        name="claim", case_insensitive=True, pass_context=True
+    )
     async def claim(self, ctx):
         """ Invoke a request to claim voice channels
 """
@@ -122,6 +124,33 @@ class VoiceChannelControl(commands.Cog):
                 return
             self.claims[ctx.author.id].append(ghost)
             await self.voice_control(ctx, game=game, ghost=ghost)
+
+    @commands.command(
+        name="claimed", case_insensitive=True, pass_context=True
+    )
+    async def claimed(self, ctx):
+        """ Return all members with claims and repsective claimed voice channels
+"""
+        embed = discord.Embed(
+            title="Claimed Voice Channels", color=0x0000ff
+        )
+        for claim in self.claims:
+            game = self.bot.get_channel(
+                id=self.claims[claim][0]
+            )
+            value = f"`Game`: {game.name}"
+            if len(self.claims[claim]) == 2:
+                ghost = self.bot.get_channel(
+                    id=self.claims[claim][1]
+                )
+                value += f"\n`Ghost`: {ghost.name}"
+            embed.add_field(
+                name=discord.utils.get(
+                    ctx.guild.members, id=ctx.author.id
+                ).name,
+                value=value
+            )
+        await ctx.channel.send(embed=embed)
 
     async def claim_voice_channel(self, ctx, *, style):
         """ Send an embed with reactions for member to designate a lobby VC
