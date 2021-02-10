@@ -177,36 +177,33 @@ class VoiceChannelControl(commands.Cog):
         message = await ctx.channel.send(embed=embed)
         for rxn in reactions:
             await message.add_reaction(rxn)
-
-    async def cancel_claim(self, payload):
-        """ Cancel member request to claim a voice channel
-"""
-        # Get channel and message information from payload
-        channel = discord.utils.get(
-            payload.member.guild.channels, id=payload.channel_id
-        )
-        message = await channel.fetch_message(payload.message_id)
-        # Verify payload member is the member who requested
-        embed = message.embeds[0]
-        footer_regex = re.compile(
-            r"^VoiceChannelControl \| (.*)"
-        )
-        if int(
-                footer_regex.search(embed.footer.text).group(1)
-        ) != payload.member.id:
-            await channel.send(
-                "You did not request this voice channel claim"
-            )
-            return
-        # Delete voice channel claim panel
-        await message.clear_reactions()
-        embed = discord.Embed(
-            title="Voice Channel Claim Canceled",
-            color=0x0000ff
-        )
-        await message.edit(embed=embed)
-        await asyncio.sleep(10)
+        while True:
+            try:
+                payload = await self.bot.wait_for(
+                    "raw_reaction_add",
+                    timeout=600,
+                    check=lambda p: p.member.id == ctx.author.id
+                )
+            except asyncio.TimeoutError:
+                check = await ctx.channel.send(
+                    f"{ctx.author.mention}: React to confirm you're still active"
+                )
+                await check.add_reaction(u"\U0001F44D")
+                try:
+                    await self.bot.wait_for(
+                        "raw_reaction_add",
+                        timeout=60.0,
+                        check=lambda p: p.member.id == ctx.author.id
+                    )
+                    await check.delete()
+                except asyncio.TimeoutError:
+                    break
         await message.delete()
+        await check.edit(
+            f"{ctx.author.mention}: Your claim was deleted due to inactivity"
+        )
+        await check.clear_reactions()
+        del self.claims[ctx.author.id]
 
     async def manage_voices(self, payload):
         channel = self.bot.get_chanel(payload.channel_id)
