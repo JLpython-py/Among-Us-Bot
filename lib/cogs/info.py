@@ -27,15 +27,8 @@ SOFTWARE.
 ==============================================================================
 """
 
-import logging
-
 import discord
 from discord.ext import commands
-
-logging.basicConfig(
-    level=logging.INFO,
-    format=" %(asctime)s - %(levelname)s - %(message)"
-)
 
 
 class Info(commands.Cog):

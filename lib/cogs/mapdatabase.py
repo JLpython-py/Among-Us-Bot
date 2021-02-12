@@ -28,7 +28,6 @@ SOFTWARE.
 """
 
 import asyncio
-import logging
 import os
 import re
 import sqlite3
@@ -36,21 +35,16 @@ import sqlite3
 import discord
 from discord.ext import commands
 
-logging.basicConfig(
-    level=logging.INFO,
-    format=" %(asctim)s - %(levelname)s - %(message)s"
-)
-
 
 class MapDatabase(commands.Cog):
     """ Allow member to explore available information in Among Us
 """
     def __init__(self, bot):
         self.bot = bot
-        self.airship = DatabaseParser(self.bot.airship, self.bot)
-        self.mira_hq = DatabaseParser(self.bot.mirahq, self.bot)
-        self.polus = DatabaseParser(self.bot.polus, self.bot)
-        self.the_skeld = DatabaseParser(self.bot.theskeld, self.bot)
+        self.arship_parser = DatabaseParser(self.bot.airship, self.bot)
+        self.mira_hq_parser = DatabaseParser(self.bot.mirahq, self.bot)
+        self.polus_parser = DatabaseParser(self.bot.polus, self.bot)
+        self.the_skeld_parser = DatabaseParser(self.bot.theskeld, self.bot)
 
     @commands.group(
         name="Airship", case_insensitive=True, pass_context=True,
@@ -69,7 +63,7 @@ class MapDatabase(commands.Cog):
     async def airship_retrieve(self, ctx, category, option):
         """ Retrieve option for category in Airship database
 """
-        await self.airship.retrieve(ctx, category, option)
+        await self.arship_parser.retrieve(ctx, category, option)
 
     @airship.group(
         name="search", case_insensitive=True, pass_context=True,
@@ -78,7 +72,7 @@ class MapDatabase(commands.Cog):
     async def airship_search(self, ctx, category):
         """ Search options for category in Airship database
 """
-        await self.airship.search(ctx, category)
+        await self.arship_parser.search(ctx, category)
 
     @airship.group(
         name="listopts", case_insensitive=True, pass_context=True,
@@ -87,7 +81,7 @@ class MapDatabase(commands.Cog):
     async def airship_listopts(self, ctx, category):
         """ List options for category in Airship database
 """
-        await self.airship.listopts(ctx, category)
+        await self.arship_parser.listopts(ctx, category)
 
     @commands.group(
         name="MIRAHQ", case_insensitive=True, pass_context=True,
@@ -106,7 +100,7 @@ class MapDatabase(commands.Cog):
     async def mirahq_retrieve(self, ctx, category, option):
         """ Retrieve option for category in MIRA HQ database
 """
-        await self.mira_hq.retrieve(ctx, category, option)
+        await self.mira_hq_parser.retrieve(ctx, category, option)
 
     @mira_hq.group(
         name="search", case_insensitive=True, pass_context=True,
@@ -115,7 +109,7 @@ class MapDatabase(commands.Cog):
     async def mirahq_search(self, ctx, category):
         """ Search options for category in MIRA HQ database
 """
-        await self.mira_hq.search(ctx, category)
+        await self.mira_hq_parser.search(ctx, category)
 
     @mira_hq.group(
         name="listopts", case_insensitive=True, pass_context=True,
@@ -124,7 +118,7 @@ class MapDatabase(commands.Cog):
     async def mirahq_listopts(self, ctx, category):
         """ List options for category in MIRA HQ database
 """
-        await self.mira_hq.listopts(ctx, category)
+        await self.mira_hq_parser.listopts(ctx, category)
 
     @commands.group(
         name="Polus", case_insensitive=True, pass_context=True,
@@ -143,7 +137,7 @@ class MapDatabase(commands.Cog):
     async def polus_retrieve(self, ctx, category, option):
         """ Retrieve option for category in Polus database
 """
-        await self.polus.retrieve(ctx, category, option)
+        await self.polus_parser.retrieve(ctx, category, option)
 
     @polus.group(
         name="search", case_insensitive=True, pass_context=True,
@@ -152,7 +146,7 @@ class MapDatabase(commands.Cog):
     async def polus_search(self, ctx, category):
         """ Search options for category in Polus database
 """
-        await self.polus.search(ctx, category)
+        await self.polus_parser.search(ctx, category)
 
     @polus.group(
         name="listopts", case_insensitive=True, pass_context=True,
@@ -161,7 +155,7 @@ class MapDatabase(commands.Cog):
     async def polus_listopts(self, ctx, category):
         """ List options for category in Polus database
 """
-        await self.polus.listopts(ctx, category)
+        await self.polus_parser.listopts(ctx, category)
 
     @commands.group(
         name="TheSkeld", case_insensitive=True, pass_context=True,
@@ -180,7 +174,7 @@ class MapDatabase(commands.Cog):
     async def theskeld_retrieve(self, ctx, category, option):
         """ Retrieve option for category in The Skeld database
 """
-        await self.the_skeld.retrieve(ctx, category, option)
+        await self.the_skeld_parser.retrieve(ctx, category, option)
 
     @the_skeld.group(
         name="search", case_insensitive=True, pass_context=True,
@@ -189,7 +183,7 @@ class MapDatabase(commands.Cog):
     async def theskeld_search(self, ctx, category):
         """ Search options for category in The Skeld database
 """
-        await self.the_skeld.search(ctx, category)
+        await self.the_skeld_parser.search(ctx, category)
 
     @the_skeld.group(
         name="listopts", case_insensitive=True, pass_context=True,
@@ -198,16 +192,19 @@ class MapDatabase(commands.Cog):
     async def theskeld_listopts(self, ctx, category):
         """ List options for category in The Skeld database
 """
-        await self.the_skeld.listopts(ctx, category)
+        await self.the_skeld_parser.listopts(ctx, category)
 
 
 class DatabaseParser:
-
+    """ Parse SQLite databases in data/db
+"""
     def __init__(self, database, bot):
         self.database = database
         self.bot = bot
 
     async def retrieve(self, ctx, category, option):
+        """ Retrieve a specific option from a category of options
+"""
         category, option = category.lower(), option.title()
         query = f"""
                 SELECT *
@@ -221,7 +218,7 @@ class DatabaseParser:
             return
         data = dict(zip(columns, content[0]))
         if not data:
-            await ctx.channel.send(f"No results found.")
+            await ctx.channel.send("No results found.")
         # Send data in embed
         embed = discord.Embed(
             title=f"{category.title()}: {option}", color=0x0000ff
@@ -297,7 +294,7 @@ class DatabaseParser:
             await ctx.channel.send(f"`{category}` is not valid.")
             return
         if not content:
-            await ctx.channel.send(f"No results found.")
+            await ctx.channel.send("No results found.")
             return
         # Send data in embed
         embed = discord.Embed(

@@ -28,15 +28,9 @@ SOFTWARE.
 """
 
 import asyncio
-import logging
 
 import discord
 from discord.ext import commands
-
-logging.basicConfig(
-    level=logging.INFO,
-    format=" %(asctime)s - %(levelname) - %(message)"
-)
 
 
 class VoiceChannelControl(commands.Cog):
