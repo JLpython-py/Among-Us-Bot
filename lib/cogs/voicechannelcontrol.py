@@ -72,7 +72,9 @@ class VoiceChannelControl(commands.Cog):
                 f"{member.mention}: All claims forcefully yielded due to inactivity"
             )
 
-    @commands.command(name="claim", pass_context=True)
+    @commands.command(
+        name="claim", case_insensitive=True, pass_context=True
+    )
     async def claim(self, ctx):
         """ Invoke a request to claim voice channels
 """
@@ -97,7 +99,10 @@ class VoiceChannelControl(commands.Cog):
             payload = await self.bot.wait_for(
                 "raw_reaction_add",
                 timeout=30.0,
-                check=lambda p: p.member.id == ctx.author.id
+                check=lambda p: (
+                        p.member.id == ctx.author.id
+                        and p.message_id == message.id
+                )
             )
             await message.delete()
         except asyncio.TimeoutError:
@@ -122,6 +127,33 @@ class VoiceChannelControl(commands.Cog):
                 return
             self.claims[ctx.author.id].append(ghost)
             await self.voice_control(ctx, game=game, ghost=ghost)
+
+    @commands.command(
+        name="claimed", case_insensitive=True, pass_context=True
+    )
+    async def claimed(self, ctx):
+        """ Return all members with claims and repsective claimed voice channels
+"""
+        embed = discord.Embed(
+            title="Claimed Voice Channels", color=0x0000ff
+        )
+        for claim in self.claims:
+            game = self.bot.get_channel(
+                id=self.claims[claim][0]
+            )
+            value = f"`Game`: {game.name}"
+            if len(self.claims[claim]) == 2:
+                ghost = self.bot.get_channel(
+                    id=self.claims[claim][1]
+                )
+                value += f"\n`Ghost`: {ghost.name}"
+            embed.add_field(
+                name=discord.utils.get(
+                    ctx.guild.members, id=ctx.author.id
+                ).name,
+                value=value
+            )
+        await ctx.channel.send(embed=embed)
 
     async def claim_voice_channel(self, ctx, *, style):
         """ Send an embed with reactions for member to designate a lobby VC
@@ -166,7 +198,10 @@ class VoiceChannelControl(commands.Cog):
         try:
             payload = await self.bot.wait_for(
                 "raw_reaction_add", timeout=30.0,
-                check=lambda p: p.member.id == ctx.author.id
+                check=lambda p: (
+                        p.member.id == ctx.author.id
+                        and p.message_id == message.id
+                )
             )
             await message.delete()
             return voice_channels[
@@ -184,13 +219,14 @@ class VoiceChannelControl(commands.Cog):
         # Check if Ghost Lobby is applicable
         if ghost is None:
             reactions = [
-                u"\U0001F507", u"\U0001F508", u"\U0001F3F3"
+                u"\U0001F507", u"\U0001F508", u"\U0001F515",
+                u"\U0001F514", u"\U0001F3F3"
             ]
             fields = {
                 "Claimed": f"Game: `{game.name}`",
                 "Voice Channel Control": "\n".join([
-                    "Mute All- :mute:",
-                    "Unmute All - :speaker:",
+                    "Mute/Un-Mute All - :mute:/:speaker:",
+                    "Deafen/Un-Deafen All - :bell:/:no_bell:",
                     "Yield - :flag_white:"
                 ])
             }
@@ -198,17 +234,18 @@ class VoiceChannelControl(commands.Cog):
             # Get Ghost Lobby voice channel
             ghost = self.bot.get_channel(id=ghost)
             reactions = [
-                u"\U0001F507", u"\U0001F508", u"\U0001F47B",
-                u"\U0001F3E5", u"\U0001F504", u"\U0001F3F3"
+                u"\U0001F507", u"\U0001F508", u"\U0001F515",
+                u"\U0001F514", u"\U0001F47B", u"\U0001F3E5",
+                u"\U0001F504", u"\U0001F3F3"
             ]
             fields = {
                 "Claimed": f"Game: `{game.name}`\nGhost: `{ghost.name}`",
                 "Voice Channel Control": "\n".join([
-                    "Mute All - :mute:",
-                    "Unmute All - :speaker:",
+                    "Mute/Un-Mute All - :mute:/:speaker:",
+                    "Deafen/Un-Deafen All - :bell:/:no_bell:",
                     "Select and Move Member(s) to Ghost - :ghost:",
                     "Select and Move Member(s) to Game - :hospital:",
-                    "Revert All Actions/Reset Game - :arrows_counterclockwise:"
+                    "Revert All Actions/Reset Game - :arrows_counterclockwise:",
                     "Yield - :flag_white:"
                 ])
             }
@@ -232,7 +269,10 @@ class VoiceChannelControl(commands.Cog):
                 payload = await self.bot.wait_for(
                     "raw_reaction_add",
                     timeout=600,
-                    check=lambda p: p.member.id == ctx.author.id
+                    check=lambda p: (
+                            p.member.id == ctx.author.id
+                            and p.message_id == message.id
+                    )
                 )
             # Check if member is still actively using voice channel claim
             except asyncio.TimeoutError:
@@ -245,7 +285,10 @@ class VoiceChannelControl(commands.Cog):
                     await self.bot.wait_for(
                         "raw_reaction_add",
                         timeout=60.0,
-                        check=lambda p: p.member.id == ctx.author.id
+                        check=lambda p: (
+                                p.member.id == ctx.author.id
+                                and p.message_id == check.id
+                        )
                     )
                     await check.delete()
                     continue
@@ -259,6 +302,8 @@ class VoiceChannelControl(commands.Cog):
             # Call functions according to emoji used
             if payload.emoji.name in [u"\U0001F507", u"\U0001F508"]:
                 await self.manage_mute(payload)
+            elif payload.emoji.name in [u"\U0001F515", u"\U0001F514"]:
+                await self.manage_deafen(payload)
             elif payload.emoji.name == u"\U0001F47B":
                 await self.member_dead(payload)
             elif payload.emoji.name == u"\U0001F3E5":
@@ -275,7 +320,7 @@ class VoiceChannelControl(commands.Cog):
         del self.claims[ctx.author.id]
 
     async def manage_mute(self, payload):
-        """ Mute/Unmute members in Game Lobby
+        """ Mute/Un-Mute members in Game Lobby
 """
         # Get information from payload
         channel = self.bot.get_channel(payload.channel_id)
@@ -285,7 +330,7 @@ class VoiceChannelControl(commands.Cog):
         # Verify members are present in the voice channel
         if not voice_channel.members:
             msg = await channel.send(
-                f"there are no members in {voice_channel.name}"
+                f"There are no members in {voice_channel.name}"
             )
             await asyncio.sleep(2)
             await msg.delete()
@@ -297,12 +342,34 @@ class VoiceChannelControl(commands.Cog):
                     mute=emojis.get(payload.emoji.name)
                 )
 
+    async def manage_deafen(self, payload):
+        """ Deafen/Un-Deafen members in Game Lobby
+"""
+        # Get information from payload
+        channel = self.bot.get_channel(payload.channel_id)
+        voice_channel = self.bot.get_channel(
+            id=self.claims.get(payload.member.id)[0]
+        )
+        # Verify members are present in the voice channel
+        if not voice_channel.members:
+            msg = await channel.send(
+                f"There are no members in {voice_channel.name}"
+            )
+            await asyncio.sleep(2)
+            await msg.delete()
+        # Edit all members' voices according to the emoji used
+        else:
+            emojis = {u"\U0001F515": True, u"\U0001F514": False}
+            for member in voice_channel.members:
+                await member.edit(
+                    deafen=emojis.get(payload.emoji.name)
+                )
+
     async def member_dead(self, payload):
         """ Move member from Game Lobby to Ghost Lobby
 """
         # Get channel of payload and claimed game, ghost channels
         channel = self.bot.get_channel(payload.channel_id)
-        guild = self.bot.get_guild(payload.guild_id)
         game, ghost = [
             self.bot.get_channel(id=c)
             for c in self.claims[payload.member.id]
@@ -343,6 +410,7 @@ class VoiceChannelControl(commands.Cog):
                     timeout=5.0,
                     check=lambda p: (
                         p.member.id == payload.member.id
+                        and p.message_id == message.id
                         and p.emoji.name in self.emojis
                     )
                 )
@@ -364,7 +432,6 @@ class VoiceChannelControl(commands.Cog):
 """
         # Get channel of payload and claimed game, ghost channels
         channel = self.bot.get_channel(payload.channel_id)
-        guild = self.bot.get_guild(payload.guild_id)
         game, ghost = [
             self.bot.get_channel(id=c)
             for c in self.claims[payload.member.id]
@@ -404,6 +471,7 @@ class VoiceChannelControl(commands.Cog):
                     timeout=5.0,
                     check=lambda p: (
                             p.member.id == payload.member.id
+                            and p.message_id == message.id
                             and p.emoji.name in self.emojis
                     )
                 )
