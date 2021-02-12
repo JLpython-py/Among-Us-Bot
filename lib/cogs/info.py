@@ -39,7 +39,7 @@ logging.basicConfig(
 
 
 class Info(commands.Cog):
-    """ General bot info
+    """ General bot and bot project info
 """
     def __init__(self, bot):
         self.bot = bot
@@ -48,6 +48,8 @@ class Info(commands.Cog):
         name="info", case_insensitive=True, pass_context=True
     )
     async def stats(self, ctx):
+        """ Return bot application info
+"""
         app_info = await self.bot.application_info()
         embed = discord.Embed(
             title="Bot Application Info",
@@ -67,6 +69,8 @@ class Info(commands.Cog):
         name="repository", case_insensitive=True, pass_context=True
     )
     async def repository(self, ctx):
+        """ Return a link to the project repository
+"""
         url = "https://github.com/JLpython-py/Among-Us-Bot"
         desc = f"This project's GitHub repository can be found here: {url}"
         embed = discord.Embed(
@@ -80,6 +84,8 @@ class Info(commands.Cog):
         name="wiki", case_insensitive=True, pass_context=True
     )
     async def wiki(self, ctx):
+        """ Return a link to the project repository wiki
+"""
         url = "https://github.com/JLpython-py/Among-Us-Bot/wiki"
         desc = f"The wiki for this project can be found here: {url}"
         embed = discord.Embed(
@@ -93,6 +99,8 @@ class Info(commands.Cog):
         name="data", case_insensitive=True, pass_context=True
     )
     async def data(self, ctx):
+        """ Return a link to a repository containing Among Us data
+"""
         url = "https://github.com/JLpython-py/AmongUsData/"
         desc = f"Among Us data CSV files can be found here: {url}"
         embed = discord.Embed(
@@ -106,6 +114,8 @@ class Info(commands.Cog):
         name="website", case_insensitive=True, pass_context=True
     )
     async def website(self, ctx):
+        """ Return a link to the repository GitHub page
+"""
         url = "https://jlpython-py.github.io/Among-Us-Bot/"
         desc = f"This project's GitHub page can be found here: {url}"
         embed = discord.Embed(
