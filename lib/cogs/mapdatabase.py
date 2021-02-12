@@ -221,7 +221,7 @@ class DatabaseParser:
             await ctx.channel.send("No results found.")
         # Send data in embed
         embed = discord.Embed(
-            title=f"{category.title()}: {option}", color=0x0000ff
+            title=f"{category.title()}: {option}", color=0xff0000
         )
         for item in data:
             embed.add_field(name=item.title(), value=data[item])
@@ -322,7 +322,7 @@ class DatabaseParser:
         option = title_regex.search(embed.title).group(2)
         # Edit embed to mimic retrieve command
         embed = discord.Embed(
-            title=f"{category}: {option}", color=0x0000ff
+            title=f"{category}: {option}", color=0xff0000
         )
         for item in data[option]:
             embed.add_field(
@@ -384,7 +384,7 @@ def scrolling_embed(mapname, category, data, *, index=0):
     # Send data in embed
     embed = discord.Embed(
         title=f"{category.title()}: {option_data['name']}",
-        color=0x0000ff
+        color=0xff0000
     )
     embed.set_footer(
         text=f"{mapname}: Page {index+1}/{len(data)}"
