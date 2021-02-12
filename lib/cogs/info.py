@@ -27,8 +27,15 @@ SOFTWARE.
 ==============================================================================
 """
 
+import logging
+
 import discord
 from discord.ext import commands
+
+logging.basicConfig(
+    level=logging.INFO,
+    format=" %(asctime)s - %(levelname)s - %(message)"
+)
 
 
 class Info(commands.Cog):
@@ -36,6 +43,27 @@ class Info(commands.Cog):
 """
     def __init__(self, bot):
         self.bot = bot
+
+    @commands.command(
+        name="info"
+    )
+    async def stats(self, ctx):
+        app_info = await self.bot.application_info()
+        embed = discord.Embed(
+            title="Bot Application Info",
+            color=0x0000ff
+        )
+        logging.info(app_info)
+        fields = {
+            "ID": app_info.id, "Name": app_info.name, "Owner": app_info.owner,
+            "Team": app_info.team, "Description": app_info.description,
+            "Bot Public": app_info.bot_public,
+            "Bot Require Code Grant": app_info.bot_require_code_grant,
+        }
+        for field in fields:
+            embed.add_field(name=field, value=fields[field])
+        embed.set_image(url=app_info.cover_image_url_as(format="png"))
+        await ctx.channel.send(embed=embed)
 
 
 def setup(bot):
