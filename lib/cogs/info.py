@@ -53,7 +53,6 @@ class Info(commands.Cog):
             title="Bot Application Info",
             color=0x0000ff
         )
-        logging.info(app_info)
         fields = {
             "ID": app_info.id, "Name": app_info.name, "Owner": app_info.owner,
             "Team": app_info.team, "Description": app_info.description,
@@ -62,7 +61,6 @@ class Info(commands.Cog):
         }
         for field in fields:
             embed.add_field(name=field, value=fields[field])
-        embed.set_thumbnail(url=app_info.cover_image_url_as(format="png"))
         await ctx.channel.send(embed=embed)
 
     @commands.command(
@@ -70,9 +68,9 @@ class Info(commands.Cog):
     )
     async def repository(self, ctx):
         url = "https://github.com/JLpython-py/Among-Us-Bot"
-        desc = f"The repository for this project can be found here: {url}"
+        desc = f"This project's GitHub repository can be found here: {url}"
         embed = discord.Embed(
-            title="Bot Repository",
+            title="Bot Project Repository",
             color=0x0000ff,
             description=desc
         )
@@ -99,6 +97,19 @@ class Info(commands.Cog):
         desc = f"Among Us data CSV files can be found here: {url}"
         embed = discord.Embed(
             title="Among Us Data",
+            color=0x0000ff,
+            description=desc
+        )
+        await ctx.channel.send(embed=embed)
+
+    @commands.command(
+        name="website", case_insensitive=True, pass_context=True
+    )
+    async def website(self, ctx):
+        url = "https://jlpython-py.github.io/Among-Us-Bot/"
+        desc = f"This project's GitHub page can be found here: {url}"
+        embed = discord.Embed(
+            title="Bot Project Website",
             color=0x0000ff,
             description=desc
         )
