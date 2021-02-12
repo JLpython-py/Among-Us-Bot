@@ -62,7 +62,7 @@ class Info(commands.Cog):
         }
         for field in fields:
             embed.add_field(name=field, value=fields[field])
-        embed.set_image(url=app_info.cover_image_url_as(format="png"))
+        embed.set_thumbnail(url=app_info.cover_image_url_as(format="png"))
         await ctx.channel.send(embed=embed)
 
     @commands.command(
@@ -86,6 +86,19 @@ class Info(commands.Cog):
         desc = f"The wiki for this project can be found here: {url}"
         embed = discord.Embed(
             title="Bot Repository Wiki",
+            color=0x0000ff,
+            description=desc
+        )
+        await ctx.channel.send(embed=embed)
+
+    @commands.command(
+        name="data", case_insensitive=True, pass_context=True
+    )
+    async def data(self, ctx):
+        url = "https://github.com/JLpython-py/AmongUsData/"
+        desc = f"Among Us data CSV files can be found here: {url}"
+        embed = discord.Embed(
+            title="Among Us Data",
             color=0x0000ff,
             description=desc
         )
