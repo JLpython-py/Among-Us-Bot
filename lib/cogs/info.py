@@ -45,7 +45,7 @@ class Info(commands.Cog):
         self.bot = bot
 
     @commands.command(
-        name="info"
+        name="info", case_insensitive=True, pass_context=True
     )
     async def stats(self, ctx):
         app_info = await self.bot.application_info()
@@ -63,6 +63,32 @@ class Info(commands.Cog):
         for field in fields:
             embed.add_field(name=field, value=fields[field])
         embed.set_image(url=app_info.cover_image_url_as(format="png"))
+        await ctx.channel.send(embed=embed)
+
+    @commands.command(
+        name="repository", case_insensitive=True, pass_context=True
+    )
+    async def repository(self, ctx):
+        url = "https://github.com/JLpython-py/Among-Us-Bot"
+        desc = f"The repository for this project can be found here: {url}"
+        embed = discord.Embed(
+            title="Bot Repository",
+            color=0x0000ff,
+            description=desc
+        )
+        await ctx.channel.send(embed=embed)
+
+    @commands.command(
+        name="wiki", case_insensitive=True, pass_context=True
+    )
+    async def wiki(self, ctx):
+        url = "https://github.com/JLpython-py/Among-Us-Bot/wiki"
+        desc = f"The wiki for this project can be found here: {url}"
+        embed = discord.Embed(
+            title="Bot Repository Wiki",
+            color=0x0000ff,
+            description=desc
+        )
         await ctx.channel.send(embed=embed)
 
 
