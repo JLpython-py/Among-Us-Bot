@@ -226,7 +226,7 @@ class VoiceChannelControl(commands.Cog):
                 "Claimed": f"Game: `{game.name}`",
                 "Voice Channel Control": "\n".join([
                     "Mute/Un-Mute All - :mute:/:speaker:",
-                    "Deafen/Un-Deafen All - :bell:/:no_bell:",
+                    "Deafen/Un-Deafen All - :no_bell:/:bell:",
                     "Yield - :flag_white:"
                 ])
             }
