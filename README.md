@@ -43,9 +43,9 @@ The bot requires the following permissions turned on to function properly, but t
 
 | General Permissions | Text Permissions | Voice Permissions |
 | :--- | :--- | :--- |
-| View Channels | Send Messages | |
-| | Embed Links | |
-| | Attach Files | |
+| View Channels | Send Messages | Mute Members |
+| | Embed Links | Deafen Members |
+| | Attach Files | Move Members |
 | | Read Message History | |
 | | Add Reactoins | |
 
