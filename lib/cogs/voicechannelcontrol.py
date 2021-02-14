@@ -236,7 +236,7 @@ class VoiceChannelControl(commands.Cog):
                 "Claimed": f"Game: `{game.name}`\nGhost: `{ghost.name}`",
                 "Voice Channel Control": "\n".join([
                     "Mute/Un-Mute All - :mute:/:speaker:",
-                    "Deafen/Un-Deafen All - :bell:/:no_bell:",
+                    "Deafen/Un-Deafen All - :no_bell:/:bell:",
                     "Select and Move Member(s) to Ghost - :ghost:",
                     "Select and Move Member(s) to Game - :hospital:",
                     "Revert All Actions/Reset Game - :arrows_counterclockwise:",

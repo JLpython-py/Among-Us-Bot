@@ -2,6 +2,13 @@
 # lib.bot.__init__.py
 
 """
+Among-Us-Bot Discord bot
+Authorization Flow:
+    - Public Bot
+Privileged Gateway Intents:
+    - Presence Intent
+    - Server Members Intents
+Permission Integer: 29486144
 ==============================================================================
 MIT License
 
