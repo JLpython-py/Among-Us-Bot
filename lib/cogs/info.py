@@ -118,6 +118,22 @@ class Info(commands.Cog):
         )
         await ctx.channel.send(embed=embed)
 
+    @commands.command(
+        name="issue", case_insensitive=True, pass_context=True,
+        aliases=["bug", "feature"]
+    )
+    async def issue(self, ctx):
+        """ Return a link to create a bug report or feature request GitHub issue
+"""
+        url = "https://github.com/JLpython-py/Among-Us-Bot/issues/new/choose"
+        desc = f"Create an issue to report a bug or suggest a feature here: {url}"
+        embed = discord.Embed(
+            title="Create a New Issue",
+            color=0x0000ff,
+            description=desc
+        )
+        await ctx.channel.send(embed=embed)
+
 
 def setup(bot):
     """ Add Info cog
