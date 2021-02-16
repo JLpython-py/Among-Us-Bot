@@ -28,6 +28,8 @@ SOFTWARE.
 """
 
 import asyncio
+import csv
+import os
 
 import discord
 from discord.ext import commands
@@ -44,6 +46,7 @@ class VoiceChannelControl(commands.Cog):
             u'6\ufe0f\u20e3', u'7\ufe0f\u20e3', u'8\ufe0f\u20e3',
             u'9\ufe0f\u20e3']
         self.claims = {}
+        self.locked = []
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
@@ -214,14 +217,15 @@ class VoiceChannelControl(commands.Cog):
         if ghost is None:
             reactions = [
                 u"\U0001F507", u"\U0001F508", u"\U0001F515",
-                u"\U0001F514", u"\U0001F3F3"
+                u"\U0001F514", u"\U0001F3F3", u"\U0001F512"
             ]
             fields = {
                 "Claimed": f"Game: `{game.name}`",
                 "Voice Channel Control": "\n".join([
                     "Mute/Un-Mute All - :mute:/:speaker:",
                     "Deafen/Un-Deafen All - :no_bell:/:bell:",
-                    "Yield - :flag_white:"
+                    "Yield - :flag_white:",
+                    "Disable/Enable `MapDatabase` Commands - :lock:"
                 ])
             }
         else:
@@ -230,7 +234,7 @@ class VoiceChannelControl(commands.Cog):
             reactions = [
                 u"\U0001F507", u"\U0001F508", u"\U0001F515",
                 u"\U0001F514", u"\U0001F47B", u"\U0001F3E5",
-                u"\U0001F504", u"\U0001F3F3"
+                u"\U0001F504", u"\U0001F3F3", u"\U0001F512"
             ]
             fields = {
                 "Claimed": f"Game: `{game.name}`\nGhost: `{ghost.name}`",
@@ -240,7 +244,8 @@ class VoiceChannelControl(commands.Cog):
                     "Select and Move Member(s) to Ghost - :ghost:",
                     "Select and Move Member(s) to Game - :hospital:",
                     "Revert All Actions/Reset Game - :arrows_counterclockwise:",
-                    "Yield - :flag_white:"
+                    "Yield - :flag_white:",
+                    "Disable/Enable `MapDatabase` Commands - :lock:"
                 ])
             }
         # Send prompt for user to control member properties
@@ -305,13 +310,15 @@ class VoiceChannelControl(commands.Cog):
             elif payload.emoji.name == u"\U0001F504":
                 await self.reset_game(payload)
             elif payload.emoji.name == u"\U0001F3F3":
+                await self.yield_control(payload)
                 await ctx.channel.send(
                     f"{ctx.author.mention}: All claims yielded successfully"
                 )
                 break
+            elif payload.emoji.name == u"\U0001F512":
+                await self.lock_commands(payload)
             await message.remove_reaction(payload.emoji, payload.member)
         await message.delete()
-        del self.claims[ctx.author.id]
 
     async def manage_mute(self, payload):
         """ Mute/Un-Mute members in Game Lobby
@@ -495,6 +502,31 @@ class VoiceChannelControl(commands.Cog):
         # Unmute and Undeafen all members
         for mem in game.members:
             await mem.edit(mute=False, deafen=False)
+
+    async def yield_control(self, payload):
+        """ Yield control of voice channel claims
+"""
+        # Delete channel from list of locked voice channels
+        game = self.claims[payload.member.id][0]
+        if game in self.locked:
+            self.locked.remove(game)
+        with open(os.path.join("data", "locked.txt"), "w") as file:
+            writer = csv.writer(file)
+            writer.writerow(self.locked)
+        # Delete channel from claimed channels
+        del self.claims[payload.member.id]
+
+    async def lock_commands(self, payload):
+        """ Lock MapDatabase commands for member in voice channels
+"""
+        game = self.claims[payload.member.id][0]
+        if game in self.locked:
+            self.locked.remove(game)
+        else:
+            self.locked.append(game)
+        with open(os.path.join("data", "locked.txt"), "w") as file:
+            writer = csv.writer(file)
+            writer.writerow(self.locked)
 
 
 def setup(bot):

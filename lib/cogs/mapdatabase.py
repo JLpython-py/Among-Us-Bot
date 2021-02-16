@@ -28,12 +28,31 @@ SOFTWARE.
 """
 
 import asyncio
+import csv
 import os
 import re
 import sqlite3
 
 import discord
 from discord.ext import commands
+
+
+def commands_locked(ctx):
+    """ Check data/locked.txt if member is in voice channel with locked commands
+"""
+    with open(os.path.join("data", "locked.txt")) as file:
+        data = list(csv.reader(file))[0]
+    locked = False
+    for cid in data:
+        voice_channel = discord.utils.get(
+            ctx.guild.voice_channels, id=int(cid)
+        )
+        if voice_channel is None:
+            continue
+        locked = ctx.author in voice_channel.members
+        if locked:
+            break
+    return not locked
 
 
 class MapDatabase(commands.Cog):
@@ -50,6 +69,7 @@ class MapDatabase(commands.Cog):
         name="Airship", case_insensitive=True, pass_context=True,
         aliases=["A"]
     )
+    @commands.check(commands_locked)
     async def airship(self, ctx):
         """ Command group to parse data/db/airship.sqlite
 """
@@ -87,6 +107,7 @@ class MapDatabase(commands.Cog):
         name="MIRAHQ", case_insensitive=True, pass_context=True,
         aliases=["MIRA", "MH"]
     )
+    @commands.check(commands_locked)
     async def mira_hq(self, ctx):
         """ Command group to parse data/db/mira_hq.sqlite
 """
@@ -124,6 +145,7 @@ class MapDatabase(commands.Cog):
         name="Polus", case_insensitive=True, pass_context=True,
         aliases=["P"]
     )
+    @commands.check(commands_locked)
     async def polus(self, ctx):
         """ Command group to parse data/db/polus.sqlite
 """
@@ -161,6 +183,7 @@ class MapDatabase(commands.Cog):
         name="TheSkeld", case_insensitive=True, pass_context=True,
         aliases=["Skeld", "TS"]
     )
+    @commands.check(commands_locked)
     async def the_skeld(self, ctx):
         """ Command group to parse data/db/theskeld.sqlite
 """
@@ -193,6 +216,19 @@ class MapDatabase(commands.Cog):
         """ List options for category in The Skeld database
 """
         await self.the_skeld_parser.listopts(ctx, category)
+
+    @airship.error
+    @mira_hq.error
+    @polus.error
+    @the_skeld.error
+    async def locked_command_error(self, ctx, error):
+        """ Handle `discord.ext.commands.errors.CheckFailure` error
+"""
+        if isinstance(error, commands.CheckFailure):
+            await ctx.channel.send(
+                "`MapDatabase` commands have been locked."
+            )
+            await ctx.message.delete()
 
 
 class DatabaseParser:
