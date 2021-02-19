@@ -8,15 +8,16 @@
 ![GitHub deployments](https://img.shields.io/github/deployments/JLpython-py/Among-Us-Bot/GitHub-pages)
 ![GitHub](https://img.shields.io/github/license/JLpython-py/Among-Us-Bot)
 
-![AmongUs-MapBot logo](https://user-images.githubusercontent.com/72679601/107798754-6c132e00-6d11-11eb-8561-cd99bba646cc.png)
+![Among Us](https://user-images.githubusercontent.com/72679601/105618817-8441fe00-5da0-11eb-97ee-4756d629d01a.png)
 
-Among Us Bot is a Discord bot which acts as an easily-accessible database of Among Us. Members of guilds with this bot can interact with the bot to quickly reference this information.
+Among Us Bot is a Discord bot with various features concerining the game of Among Us.
+These features are intended to be supplemental to the game itself, in order to enhance the experience of the game.
 
 <h2>Features</h2>
 
 <h3>Map Database</h2>
 
-![TheSkeld retrieve "Clean O2 Filter"](https://user-images.githubusercontent.com/72679601/107803784-ee065580-6d17-11eb-9b7f-9d96bcf09bee.png)
+![TheSkeld retrieve tasks "Divert Power"](https://user-images.githubusercontent.com/72679601/108528698-8bb5d380-7288-11eb-88c1-7518629a5a25.png)
 
 This repository has data about nearly all aspect of the Among Us maps. 
 Member of guilds can use a sent of comprehensive commands to reference the available data. 
@@ -33,11 +34,14 @@ Currently supported is generation of a random map, a random number of impostors,
 <h3>Voice Channel Control</h3>
 
 ![claim](https://user-images.githubusercontent.com/72679601/107803946-2b6ae300-6d18-11eb-9da6-e59318d692f6.png)
-![Voice Channel Claim Control](https://user-images.githubusercontent.com/72679601/107804255-87356c00-6d18-11eb-9eeb-547ee26fba5f.png)
+![Voice Channel Claim Control](https://user-images.githubusercontent.com/72679601/108528722-91abb480-7288-11eb-9b35-3a262af7b8b4.png)
 Members can claim control of a voice channel and designate it as a Game Lobby.
 Optionally, they can also claim control of a second voice channel and designate it as a Ghost Lobby.
 With control, members with claims can control the properties of other members in the Game Lobby.
 Members with claims are able to mute/un-mute members, deafen/un-deafen members, and move members to and from the Ghost Lobby, if applicable.
+Lastly, members with claims will be able to lock the `MapDatabase` commands.
+In doing so, members in the Game Lobby voice channel will not be able to use the `MapDatabase` commands.
+(Note that the other commands will still be available.)
 [See more details](https://github.com/JLpython-py/Among-Us-Bot/wiki/VoiceChannelControl).
 
 <h2>Command Guide</h2>
