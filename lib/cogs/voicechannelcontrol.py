@@ -121,9 +121,9 @@ class VoiceChannelControl(commands.Cog):
             ghost = await self.claim_voice_channel(ctx, style="Ghost Lobby")
             if ghost is None:
                 await self.voice_control(ctx, game=game, ghost=None)
-                return
-            self.claims[ctx.author.id].append(ghost)
-            await self.voice_control(ctx, game=game, ghost=ghost)
+            else:
+                self.claims[ctx.author.id].append(ghost)
+                await self.voice_control(ctx, game=game, ghost=ghost)
 
     @commands.command(
         name="claimed", case_insensitive=True, pass_context=True
@@ -217,14 +217,16 @@ class VoiceChannelControl(commands.Cog):
         if ghost is None:
             reactions = [
                 u"\U0001F507", u"\U0001F508", u"\U0001F515",
-                u"\U0001F514", u"\U0001F3F3", u"\U0001F512"
+                u"\U0001F514", u"\U0001F504", u"\U0001F3F3",
+                u"\U0001F512"
             ]
             fields = {
                 "Claimed": f"Game: `{game.name}`",
                 "Voice Channel Control": "\n".join([
-                    "Mute/Un-Mute All - :mute:/:speaker:",
-                    "Deafen/Un-Deafen All - :no_bell:/:bell:",
-                    "Yield - :flag_white:",
+                    "Mute/Un-Mute **Game Lobby** Members - :mute:/:speaker:",
+                    "Deafen/Un-Deafen **Game Lobby** Members - :no_bell:/:bell:",
+                    "Revert All Actions - :arrows_counterclockwise:",
+                    "Yield Voice Channel Claims - :flag_white:",
                     "Disable/Enable `MapDatabase` Commands - :lock:"
                 ])
             }
@@ -239,12 +241,12 @@ class VoiceChannelControl(commands.Cog):
             fields = {
                 "Claimed": f"Game: `{game.name}`\nGhost: `{ghost.name}`",
                 "Voice Channel Control": "\n".join([
-                    "Mute/Un-Mute All - :mute:/:speaker:",
-                    "Deafen/Un-Deafen All - :no_bell:/:bell:",
-                    "Select and Move Member(s) to Ghost - :ghost:",
-                    "Select and Move Member(s) to Game - :hospital:",
-                    "Revert All Actions/Reset Game - :arrows_counterclockwise:",
-                    "Yield - :flag_white:",
+                    "Mute/Un-Mute **Game Lobby** Members - :mute:/:speaker:",
+                    "Deafen/Un-Deafen **Game Lobby** Members - :no_bell:/:bell:",
+                    "Select and Move Members to **Ghost Lobby** - :ghost:",
+                    "Select and Move Members to **Game Lobby** - :hospital:",
+                    "Revert All Actions - :arrows_counterclockwise:",
+                    "Yield Voice Channel Claims - :flag_white:",
                     "Disable/Enable `MapDatabase` Commands - :lock:"
                 ])
             }
@@ -492,13 +494,16 @@ class VoiceChannelControl(commands.Cog):
     async def reset_game(self, payload):
         """ Revert member properties to defaults
 """
-        game, ghost = [
-            self.bot.get_channel(id=c)
-            for c in self.claims[payload.member.id]
-        ]
-        # Move all members from Ghost Lobby to Game Lobby
-        for mem in ghost.members:
-            await mem.move_to(game)
+        game = self.bot.get_channel(
+            id=self.claims[payload.member.id][0]
+        )
+        # If Ghost Lobby exists, move all members to Game Lobby
+        if len(self.claims[payload.member.id]) == 2:
+            ghost = self.bot.get_channel(
+                id=self.claims[payload.member.id][1]
+            )
+            for mem in ghost.members:
+                await mem.move_to(game)
         # Unmute and Undeafen all members
         for mem in game.members:
             await mem.edit(mute=False, deafen=False)
@@ -506,6 +511,8 @@ class VoiceChannelControl(commands.Cog):
     async def yield_control(self, payload):
         """ Yield control of voice channel claims
 """
+        # Reset voice channel(s)
+        await self.reset_game(payload)
         # Delete channel from list of locked voice channels
         game = self.claims[payload.member.id][0]
         if game in self.locked:
