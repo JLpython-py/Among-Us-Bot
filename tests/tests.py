@@ -1,69 +1,57 @@
 #! python3
 # tests.py
 
-import csv
+import glob
 import os
 import unittest
+from urllib.request import urlopen
 
-class TestMapBot(unittest.TestCase):
 
-    def test_directories_in_data(self):
-        dirnames = ['airship', 'mirahq', 'polus', 'theskeld']
-        directories = [d for d in os.listdir('data')\
-                       if os.path.isdir(os.path.join('data', d))]
-        self.assertEqual(dirnames, directories)
+class TestBotINIT(unittest.TestCase):
 
-    def test_subdirectories_in_directories(self):
-        directories = [d for d in os.listdir('data')\
-                       if os.path.isdir(os.path.join('data', d))]
-        subdirnames = ['actions', 'locations', 'maps', 'tasks', 'vents']
-        for directory in directories:
-            path = os.path.join('data', directory)
-            subdirectories = [sd for sd in os.listdir(path)\
-                              if os.path.isdir(os.path.join(path, sd))]
-            self.assertEqual(subdirnames, subdirectories)
+    def test_cogs_directory_exists(self):
+        self.assertTrue(
+            os.path.exists(os.path.join('lib', 'cogs'))
+        )
 
-    def test_csv_data_in_subdirectories(self):
-        directories = [d for d in os.listdir('data')\
-                       if os.path.isdir(os.path.join('data', d))]
-        subdirectories = ['actions', 'locations', 'tasks', 'vents']
-        for directory in directories:
-            for subdir in subdirectories:
-                path = os.path.join(
-                    'data', directory, subdir, f"{subdir}.csv")
-                self.assertTrue(os.path.exists(path))
+    def test_navigate_cogs_directory(self):
+        cogs = [
+            "info.py", "mapdatabase.py", "randomamongus.py",
+            "voicechannelcontrol.py"
+        ]
+        pyfiles = [
+            f for f in os.listdir(os.path.join('lib', 'cogs'))
+            if os.path.splitext(f)[1] == ".py"
+        ]
+        self.assertEqual(cogs, pyfiles)
 
-    def test_item_images_exist(self):
-        directories = [d for d in os.listdir('data')\
-                       if os.path.isdir(os.path.join('data', d))]
-        subdirectories = ['actions', 'locations', 'tasks', 'vents']
-        for directory in directories:
-            for subdir in subdirectories:
-                path = os.path.join(
-                    'data', directory, subdir, f"{subdir}.csv")
-                with open(path) as file:
-                    data = list(csv.reader(file))
-                    headers = data.pop(0)
-                    items = [r[0] for r in data]
-                for item in items:
-                    imgpath = os.path.join(
-                        'data', directory, subdir, f"{item}.png")
-                    self.assertTrue(os.path.exists(imgpath), imgpath)
+    def test_glob_pattern(self):
+        pattern = "lib/cogs/*.py"
+        paths = [
+            os.path.split(os.path.normpath(p))[1]
+            for p in glob.glob(pattern)
+        ]
+        files = [
+            f for f in os.listdir(os.path.join('lib', 'cogs'))
+            if os.path.splitext(f)[1] == ".py"
+        ]
+        self.assertEqual(set(paths), set(files))
 
-class TestRandomAmongUs(unittest.TestCase):
 
-    def test_settings_file_exists(self):
-        path = os.path.join('data', 'settings.txt')
-        self.assertTrue(os.path.exists(path))
+class TestInfoCog(unittest.TestCase):
 
-class TestMapInfo(unittest.TestCase):
+    def test_command_addresses(self):
+        urls = [
+            "https://github.com/JLpython-py/Among-Us-Bot",
+            "https://github.com/JLpython-py/Among-Us-Bot/wiki",
+            "https://github.com/JLpython-py/AmongUsData/",
+            "https://jlpython-py.github.io/Among-Us-Bot/",
+            "https://github.com/JLpython-py/Among-Us-Bot/issues/new/choose",
 
-    def test_reactions(self):
-        reactions = {
-            u'\u23ee': '⏮', u'\u23ea': '⏪', u'\u25c0': '◀', u'\u25b6': '▶',
-            u'\u23e9': '⏩', u'\u23ed': '⏭', u'\u2714': '✔', u'\u274c': '❌'}
-        for rxn in reactions:
-            self.assertEqual(rxn, reactions[rxn])
+        ]
+        for url in urls:
+            self.assertEqual(urlopen(url).getcode(), 200)
+
 
 if __name__ == '__main__':
     unittest.main()
