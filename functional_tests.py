@@ -35,25 +35,54 @@ from lib.bot import BotRoot
 from lib.db import db
 
 
-class TestRunBot(unittest.TestCase):
+class TestBotDatabaseInteraction(unittest.TestCase):
 
-    def test_run_bot(self):
-        token = os.environ.get("token", None)
-        if token is None:
-            with open(os.path.join("lib", "bot", "token.txt")) as file:
-                token = file.read()
-        self.assertIsNotNone(token)
-        loop = asyncio.get_event_loop()
-        bot = BotRoot()
-        loop.create_task(bot.start(token))
-        try:
-            loop.run_forever()
-        except KeyboardInterrupt:
-            loop.close()
-            bot.airship.close_connection()
-            bot.mirahq.close_connection()
-            bot.polus.close_connection()
-            bot.theskeld.close_connection()
+    def setUp(self):
+        self.bot = BotRoot()
+        self.conns = {
+            "airship": self.bot.airship, "mirahq": self.bot.mirahq,
+            "polus": self.bot.polus, "theskeld": self.bot.theskeld
+        }
+
+    def tearDown(self):
+        self.bot.airship.close_connection()
+        self.bot.mirahq.close_connection()
+        self.bot.polus.close_connection()
+        self.bot.theskeld.close_connection()
+
+    def test_all(self):
+        self.assertTrue(
+            all([self.bot.airship, self.bot.mirahq, self.bot.polus,
+                 self.bot.theskeld])
+        )
+
+        maps = ["mirahq", "polus", "theskeld"]
+        tables = ["actions", "locations", "maps", "tasks", "vents"]
+
+        for mapname in maps:
+            for table in tables:
+                query = f"""
+                SELECT *
+                FROM {table}
+                """
+                content = self.conns[mapname].read_query(query)
+                self.assertTrue(content)
+                self.assertTrue(
+                    os.path.exists(
+                        os.path.join("data", mapname, table)
+                    )
+                )
+                columns = self.conns[mapname].read_columns()
+                for row in content:
+                    name = dict(zip(columns, row))['name']
+                    self.assertTrue(
+                        os.path.exists(
+                            os.path.join(
+                                "data", mapname, table, f"{name}.png"
+                            )
+                        ),
+                        (mapname, table, name)
+                    )
 
 
 if __name__ == '__main__':
