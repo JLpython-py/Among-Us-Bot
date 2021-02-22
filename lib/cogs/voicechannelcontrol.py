@@ -44,7 +44,7 @@ class VoiceChannelControl(commands.Cog):
             u'6\ufe0f\u20e3', u'7\ufe0f\u20e3', u'8\ufe0f\u20e3',
             u'9\ufe0f\u20e3']
         self.claims = {}
-        self.locked = []
+        self.disabled = []
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
@@ -300,7 +300,7 @@ class VoiceChannelControl(commands.Cog):
                     await check.clear_reactions()
                     await self.yield_control(ctx.author)
                     await check.edit(
-                        content=f"{ctx.author.mention}: All claims forcefully yielded due to inactivity"
+                        content=f"{ctx.author.mention}: All claims yielded due to inactivity"
                     )
                     break
             # Call functions according to emoji used
@@ -518,8 +518,8 @@ class VoiceChannelControl(commands.Cog):
         await self.reset_game(member)
         # Delete channel from list of locked voice channels
         game = self.claims[member.id][0]
-        if game in self.locked:
-            self.locked.remove(game)
+        if game in self.disabled:
+            self.disabled.remove(game)
         # Delete channel from claimed channels
         del self.claims[member.id]
 
@@ -527,10 +527,10 @@ class VoiceChannelControl(commands.Cog):
         """ Lock MapDatabase commands for member in voice channels
 """
         game = self.claims[member.id][0]
-        if game in self.locked:
-            self.locked.remove(game)
+        if game in self.disabled:
+            self.disabled.remove(game)
         else:
-            self.locked.append(game)
+            self.disabled.append(game)
 
     @commands.command(
         name="locked", case_insensitive=True, pass_context=True
@@ -540,7 +540,7 @@ class VoiceChannelControl(commands.Cog):
 """
         locked = self.check_commands(ctx)
         embed = discord.Embed(
-            title=f"Commands Enabled/Disabled Check",
+            title="Commands Enabled/Disabled Check",
             color=0x0000ff
         )
         embed.add_field(
@@ -555,9 +555,9 @@ class VoiceChannelControl(commands.Cog):
         await message.delete()
 
     def check_commands(self, ctx):
-        """ Check if MapDatabase commands are locked for member
+        """ Check if MapDatabase commands are disabled for member
 """
-        for vcid in self.locked:
+        for vcid in self.disabled:
             voice_channel = discord.utils.get(
                 ctx.guild.voice_channels, id=vcid
             )

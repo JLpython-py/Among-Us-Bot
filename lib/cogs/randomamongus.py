@@ -42,7 +42,7 @@ class RandomAmongUs(commands.Cog):
         self.bot = bot
         with open(os.path.join('data', 'settings.txt')) as file:
             self.settings = json.load(file)
-        self.maps = ["MIRA HQ", "Polus", "The Skeld"]
+        self.maps = ["Airship", "MIRA HQ", "Polus", "The Skeld"]
 
     @commands.command(name="randomize", pass_context=True, aliases=["r"])
     async def randomize(self, ctx):
@@ -57,17 +57,16 @@ class RandomAmongUs(commands.Cog):
     async def randmap(self, ctx):
         """ Select random map
 """
-        num = random.randint(1, 3)
         mapname = random.choice(self.maps)
         embed = discord.Embed(title="Randomize Map", color=0xff0000)
         embed.add_field(name="Map", value=mapname)
-        embed.add_field(name="Impostors", value=str(num))
-        thumb_name = f"{''.join(mapname.split()).lower()}.png"
-        thumb_path = os.path.join(
-            'data', thumb_name)
-        thumbnail = discord.File(thumb_path, thumb_name)
-        embed.set_thumbnail(url=f"attachment://{thumb_name}")
-        await ctx.channel.send(file=thumbnail, embed=embed)
+        embed.add_field(name="Impostors", value=str(random.randint(1, 3)))
+        thumbnail = f"{''.join(mapname.split()).lower()}.png"
+        embed.set_thumbnail(url=f"attachment://{thumbnail}")
+        await ctx.channel.send(
+            file=discord.File(os.path.join('data', thumbnail), thumbnail),
+            embed=embed
+        )
 
     @commands.command(name="randsettings", pass_context=True, aliases=["rs"])
     async def randsettings(self, ctx, setting=''):
@@ -76,9 +75,8 @@ class RandomAmongUs(commands.Cog):
             Leaving <setting> blank will randomize all settings
 """
         setting = setting.title()
-        options = self.settings.get(setting)
         fields = {}
-        if options is None:
+        if self.settings.get(setting) is None:
             title = "Randomize Setting: ALL"
             for opt in self.settings:
                 fields.setdefault(opt, random.choice(self.settings[opt]))
