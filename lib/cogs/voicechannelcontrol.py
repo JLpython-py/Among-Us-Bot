@@ -28,8 +28,6 @@ SOFTWARE.
 """
 
 import asyncio
-import csv
-import os
 
 import discord
 from discord.ext import commands
@@ -58,15 +56,15 @@ class VoiceChannelControl(commands.Cog):
         direct_message = await member.create_dm()
         # Check if member disconnected from voice channels
         if before.channel and after.channel is None:
-            del self.claims[member.id]
+            await self.yield_control(member)
             await direct_message.send(
                 f"{member.mention}: All claims forcefully yielded after voice channel disconnect"
             )
         # Check if member is AFK
         if after.afk:
-            del self.claims[member.id]
+            await self.yield_control(member)
             await direct_message.send(
-                f"{member.mention}: All claims forcefully yielded due to inactivity"
+                f"{member.mention}: All claims forcefully yielded after AFK"
             )
 
     @commands.command(
@@ -75,6 +73,7 @@ class VoiceChannelControl(commands.Cog):
     async def claim(self, ctx):
         """ Invoke a request to claim voice channels
 """
+        await ctx.message.delete()
         # Verify member does not have a voice channel claim
         if ctx.author.id in self.claims:
             await ctx.send("You already have a voice channel claim")
@@ -150,7 +149,10 @@ class VoiceChannelControl(commands.Cog):
                 ).name,
                 value=value
             )
-        await ctx.channel.send(embed=embed)
+        await ctx.message.delete()
+        message = await ctx.channel.send(embed=embed)
+        await asyncio.sleep(10)
+        await message.delete()
 
     async def claim_voice_channel(self, ctx, *, style):
         """ Send an embed with reactions for member to designate a lobby VC
@@ -296,8 +298,9 @@ class VoiceChannelControl(commands.Cog):
                 # Forcefully yield voice channel claim
                 except asyncio.TimeoutError:
                     await check.clear_reactions()
+                    await self.yield_control(ctx.author)
                     await check.edit(
-                        f"{ctx.author.mention}: All claims forcefully yielded due to inactivity"
+                        content=f"{ctx.author.mention}: All claims forcefully yielded due to inactivity"
                     )
                     break
             # Call functions according to emoji used
@@ -310,15 +313,15 @@ class VoiceChannelControl(commands.Cog):
             elif payload.emoji.name == u"\U0001F3E5":
                 await self.member_alive(payload)
             elif payload.emoji.name == u"\U0001F504":
-                await self.reset_game(payload)
+                await self.reset_game(payload.member)
             elif payload.emoji.name == u"\U0001F3F3":
-                await self.yield_control(payload)
+                await self.yield_control(payload.member)
                 await ctx.channel.send(
                     f"{ctx.author.mention}: All claims yielded successfully"
                 )
                 break
             elif payload.emoji.name == u"\U0001F512":
-                await self.lock_commands(payload)
+                await self.lock_commands(payload.member)
             await message.remove_reaction(payload.emoji, payload.member)
         await message.delete()
 
@@ -491,16 +494,16 @@ class VoiceChannelControl(commands.Cog):
                     ].move_to(game)
         await message.delete()
 
-    async def reset_game(self, payload):
+    async def reset_game(self, member):
         """ Revert member properties to defaults
 """
         game = self.bot.get_channel(
-            id=self.claims[payload.member.id][0]
+            id=self.claims[member.id][0]
         )
         # If Ghost Lobby exists, move all members to Game Lobby
-        if len(self.claims[payload.member.id]) == 2:
+        if len(self.claims[member.id]) == 2:
             ghost = self.bot.get_channel(
-                id=self.claims[payload.member.id][1]
+                id=self.claims[member.id][1]
             )
             for mem in ghost.members:
                 await mem.move_to(game)
@@ -508,32 +511,61 @@ class VoiceChannelControl(commands.Cog):
         for mem in game.members:
             await mem.edit(mute=False, deafen=False)
 
-    async def yield_control(self, payload):
+    async def yield_control(self, member):
         """ Yield control of voice channel claims
 """
         # Reset voice channel(s)
-        await self.reset_game(payload)
+        await self.reset_game(member)
         # Delete channel from list of locked voice channels
-        game = self.claims[payload.member.id][0]
+        game = self.claims[member.id][0]
         if game in self.locked:
             self.locked.remove(game)
-        with open(os.path.join("data", "locked.txt"), "w") as file:
-            writer = csv.writer(file)
-            writer.writerow(self.locked)
         # Delete channel from claimed channels
-        del self.claims[payload.member.id]
+        del self.claims[member.id]
 
-    async def lock_commands(self, payload):
+    async def lock_commands(self, member):
         """ Lock MapDatabase commands for member in voice channels
 """
-        game = self.claims[payload.member.id][0]
+        game = self.claims[member.id][0]
         if game in self.locked:
             self.locked.remove(game)
         else:
             self.locked.append(game)
-        with open(os.path.join("data", "locked.txt"), "w") as file:
-            writer = csv.writer(file)
-            writer.writerow(self.locked)
+
+    @commands.command(
+        name="locked", case_insensitive=True, pass_context=True
+    )
+    async def locked(self, ctx):
+        """ Check if MapDatabase commands are locked for member
+"""
+        locked = self.check_commands(ctx)
+        embed = discord.Embed(
+            title=f"Commands Enabled/Disabled Check",
+            color=0x0000ff
+        )
+        embed.add_field(
+            name="Member", value=ctx.author.mention
+        )
+        embed.add_field(
+            name="`MapDatabase` Commands Locked?", value=f"`{locked}`"
+        )
+        await ctx.message.delete()
+        message = await ctx.channel.send(embed=embed)
+        await asyncio.sleep(10)
+        await message.delete()
+
+    def check_commands(self, ctx):
+        """ Check if MapDatabase commands are locked for member
+"""
+        for vcid in self.locked:
+            voice_channel = discord.utils.get(
+                ctx.guild.voice_channels, id=vcid
+            )
+            if voice_channel is None:
+                continue
+            if ctx.author in voice_channel.members:
+                return True
+        return False
 
 
 def setup(bot):

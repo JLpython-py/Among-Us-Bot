@@ -28,31 +28,12 @@ SOFTWARE.
 """
 
 import asyncio
-import csv
 import os
 import re
 import sqlite3
 
 import discord
 from discord.ext import commands
-
-
-def commands_locked(ctx):
-    """ Check data/locked.txt if member is in voice channel with locked commands
-"""
-    with open(os.path.join("data", "locked.txt")) as file:
-        data = list(csv.reader(file))[0]
-    locked = False
-    for cid in data:
-        voice_channel = discord.utils.get(
-            ctx.guild.voice_channels, id=int(cid)
-        )
-        if voice_channel is None:
-            continue
-        locked = ctx.author in voice_channel.members
-        if locked:
-            break
-    return not locked
 
 
 class MapDatabase(commands.Cog):
@@ -65,14 +46,19 @@ class MapDatabase(commands.Cog):
         self.polus_parser = DatabaseParser(self.bot.polus, self.bot)
         self.the_skeld_parser = DatabaseParser(self.bot.theskeld, self.bot)
 
+    def commands_locked(self, ctx):
+        voicechannelcontrol = self.bot.get_cog("VoiceChannelControl")
+        return voicechannelcontrol.check_commands(ctx)
+
     @commands.group(
         name="Airship", case_insensitive=True, pass_context=True,
         aliases=["A"]
     )
-    @commands.check(commands_locked)
     async def airship(self, ctx):
         """ Command group to parse data/db/airship.sqlite
 """
+        if self.commands_locked(ctx):
+            raise commands.CheckFailure
         if ctx.invoked_subcommand is None:
             await ctx.send("Invalid Airship command passed")
 
@@ -107,10 +93,11 @@ class MapDatabase(commands.Cog):
         name="MIRAHQ", case_insensitive=True, pass_context=True,
         aliases=["MIRA", "MH"]
     )
-    @commands.check(commands_locked)
     async def mira_hq(self, ctx):
         """ Command group to parse data/db/mira_hq.sqlite
 """
+        if self.commands_locked(ctx):
+            raise commands.CheckFailure
         if ctx.invoked_subcommand is None:
             await ctx.send("Invalid MIRA HQ command passed")
 
@@ -145,10 +132,11 @@ class MapDatabase(commands.Cog):
         name="Polus", case_insensitive=True, pass_context=True,
         aliases=["P"]
     )
-    @commands.check(commands_locked)
     async def polus(self, ctx):
         """ Command group to parse data/db/polus.sqlite
 """
+        if self.commands_locked(ctx):
+            raise commands.CheckFailure
         if ctx.invoked_subcommand is None:
             await ctx.send("Invalid Polus command passed")
 
@@ -183,10 +171,11 @@ class MapDatabase(commands.Cog):
         name="TheSkeld", case_insensitive=True, pass_context=True,
         aliases=["Skeld", "TS"]
     )
-    @commands.check(commands_locked)
     async def the_skeld(self, ctx):
         """ Command group to parse data/db/theskeld.sqlite
 """
+        if self.commands_locked(ctx):
+            raise commands.CheckFailure
         if ctx.invoked_subcommand is None:
             await ctx.send("Invalid The Skeld command passed")
 
@@ -221,14 +210,16 @@ class MapDatabase(commands.Cog):
     @mira_hq.error
     @polus.error
     @the_skeld.error
-    async def locked_command_error(self, ctx, error):
-        """ Handle `discord.ext.commands.errors.CheckFailure` error
+    async def locked_commands_error(self, ctx, error):
+        """ Handle failed check
 """
         if isinstance(error, commands.CheckFailure):
-            await ctx.channel.send(
-                "`MapDatabase` commands have been locked."
+            message = await ctx.channel.send(
+                "`MapDatabase` commands are locked."
             )
             await ctx.message.delete()
+            await asyncio.sleep(10)
+            await message.delete()
 
 
 class DatabaseParser:
