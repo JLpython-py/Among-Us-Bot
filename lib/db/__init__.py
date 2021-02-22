@@ -67,4 +67,4 @@ THESKELD = db.TheSkeldDB()
 CONNECTIONS = [AIRSHIP, MIRAHQ, POLUS, THESKELD]
 for CONN in CONNECTIONS:
     for QUERY in SETUP_QUERIES:
-        CONN.execute_query(QUERY, "w")
+        CONN.write_query(QUERY)

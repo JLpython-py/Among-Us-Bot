@@ -47,6 +47,8 @@ class MapDatabase(commands.Cog):
         self.the_skeld_parser = DatabaseParser(self.bot.theskeld, self.bot)
 
     def commands_locked(self, ctx):
+        """ Check if commands are locked for member
+"""
         voicechannelcontrol = self.bot.get_cog("VoiceChannelControl")
         return voicechannelcontrol.check_commands(ctx)
 
@@ -234,12 +236,13 @@ class DatabaseParser:
 """
         category, option = category.lower(), option.title()
         query = f"""
-                SELECT *
-                FROM {category}
-                WHERE name=?
-                """
+        SELECT *
+        FROM {category}
+        WHERE name=?
+        """
         try:
-            columns, content = self.database.execute_query(query, "rr", option)
+            content = self.database.read_query(query, option)
+            columns = self.database.read_columns()
         except sqlite3.OperationalError:
             await ctx.channel.send(f"`{category}` is not valid.")
             return
@@ -271,7 +274,8 @@ class DatabaseParser:
         FROM {category}
         """
         try:
-            columns, content = self.database.execute_query(query, "rr")
+            content = self.database.read_query(query)
+            columns = self.database.read_columns()
         except sqlite3.OperationalError:
             await ctx.channel.send(f"`{category}` is not valid.")
             return
@@ -316,7 +320,7 @@ class DatabaseParser:
         FROM {category}
         """
         try:
-            content = self.database.execute_query(query, "r")
+            content = self.database.read_query(query)
         except sqlite3.OperationalError:
             await ctx.channel.send(f"`{category}` is not valid.")
             return
