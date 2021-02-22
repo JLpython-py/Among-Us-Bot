@@ -103,7 +103,26 @@ class TestRandomAmongUsCog(unittest.TestCase):
 
 
 class TestVoiceChannelControlCog(unittest.TestCase):
-    pass
+
+    def test_claim_command_emojis(self):
+        emojis = {
+            u'0\ufe0f\u20e3': "0️⃣", u'1\ufe0f\u20e3': "1️⃣", u'2\ufe0f\u20e3': "2️⃣",
+            u'3\ufe0f\u20e3': "3️⃣", u'4\ufe0f\u20e3': "4️⃣", u'5\ufe0f\u20e3': "5️⃣",
+            u'6\ufe0f\u20e3': "6️⃣", u'7\ufe0f\u20e3': "7️⃣", u'8\ufe0f\u20e3': "8️⃣",
+            u'9\ufe0f\u20e3': "9️⃣"
+        }
+        for emoji in emojis:
+            self.assertEqual(emoji, emojis[emoji])
+
+    def test_voice_control_emojis(self):
+        emojis = {
+            u"\U0001F507": "🔇", u"\U0001F508": "🔈", u"\U0001F515": "🔕",
+            u"\U0001F514": "🔔", u"\U0001F47B": "👻", u"\U0001F3E5": "🏥",
+            u"\U0001F504": "🔄", u"\U0001F3F3": "🏳", u"\U0001F512": "🔒",
+        }
+        for emoji in emojis:
+            self.assertEqual(emoji, emojis[emoji])
+        self.assertEqual(u"\U0001F44D", "👍")
 
 
 if __name__ == '__main__':
