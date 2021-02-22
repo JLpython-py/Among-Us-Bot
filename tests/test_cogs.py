@@ -1,5 +1,5 @@
 #! python3
-# test_info.py
+# test_cogs.py
 
 import unittest
 from urllib.request import urlopen
@@ -18,6 +18,18 @@ class TestInfoCog(unittest.TestCase):
         ]
         for url in urls:
             self.assertEqual(urlopen(url).getcode(), 200)
+
+
+class TestMapDatabaseCog(unittest.TestCase):
+    pass
+
+
+class TestRandomAmongUsCog(unittest.TestCase):
+    pass
+
+
+class TestVoiceChannelControlCog(unittest.TestCase):
+    pass
 
 
 if __name__ == '__main__':
