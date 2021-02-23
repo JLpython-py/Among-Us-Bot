@@ -17,7 +17,6 @@ class TestInfoCog(unittest.TestCase):
             "https://github.com/JLpython-py/AmongUsData/",
             "https://jlpython-py.github.io/Among-Us-Bot/",
             "https://github.com/JLpython-py/Among-Us-Bot/issues/new/choose",
-
         ]
         for url in urls:
             self.assertEqual(urlopen(url).getcode(), 200)

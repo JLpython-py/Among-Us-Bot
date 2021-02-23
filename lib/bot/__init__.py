@@ -35,17 +35,12 @@ SOFTWARE.
 """
 
 import glob
-import logging
 import os
 
 import discord
 from discord.ext import commands
 
 from lib.db import db
-
-logging.basicConfig(
-    level=logging.INFO,
-    format=' %(asctime)s - %(levelname)s - %(message)s')
 
 
 class BotRoot(commands.Bot):
@@ -79,13 +74,9 @@ class BotRoot(commands.Bot):
             cog = path[1][0]
             self.load_extension(f"lib.cogs.{cog}")
             setattr(self, cog, False)
-            logging.info("Cog Loaded: %s", cog)
-        logging.info("Loaded all cogs in lib/cogs")
 
     async def on_ready(self):
-        """ Notify logging of event reference
-            Change bot status message
+        """ Change bot activity
 """
-        logging.info("Ready: %s", self.user.name)
-        await self.change_presence(
-            activity=discord.Game("Among Us | +"))
+        game = discord.Game("Among Us | +")
+        await self.change_presence(activity=game)
