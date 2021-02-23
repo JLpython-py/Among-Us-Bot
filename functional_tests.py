@@ -27,12 +27,10 @@ SOFTWARE.
 ==============================================================================
 """
 
-import asyncio
 import os
 import unittest
 
 from lib.bot import BotRoot
-from lib.db import db
 
 
 class TestBotDatabaseInteraction(unittest.TestCase):
@@ -51,29 +49,34 @@ class TestBotDatabaseInteraction(unittest.TestCase):
         self.bot.theskeld.close_connection()
 
     def test_all(self):
+        # Verify all connections
         self.assertTrue(
             all([self.bot.airship, self.bot.mirahq, self.bot.polus,
                  self.bot.theskeld])
         )
 
-        maps = ["mirahq", "polus", "theskeld"]
+        # Parser through each map and each table per map
+        maps = ["airship", "mirahq", "polus", "theskeld"]
         tables = ["actions", "locations", "maps", "tasks", "vents"]
-
         for mapname in maps:
             for table in tables:
+                # Retrieve table data
                 query = f"""
                 SELECT *
                 FROM {table}
                 """
                 content = self.conns[mapname].read_query(query)
+                columns = self.conns[mapname].read_columns()
+                # Verify content
                 self.assertTrue(content)
+                # Verify data/<mapname>/<table> directory exists
                 self.assertTrue(
                     os.path.exists(
                         os.path.join("data", mapname, table)
                     )
                 )
-                columns = self.conns[mapname].read_columns()
                 for row in content:
+                    # Verify item image exists in directory
                     name = dict(zip(columns, row))['name']
                     self.assertTrue(
                         os.path.exists(
