@@ -134,6 +134,21 @@ class Info(commands.Cog):
         )
         await ctx.channel.send(embed=embed)
 
+    @commands.command(
+        name="invite", case_insensitive=True, pass_context=True
+    )
+    async def invite(self, ctx):
+        """ Return a link to invite the Discord bot to a guild
+"""
+        url = "https://discord.com/api/oauth2/authorize?client_id=793568531757137970&permissions=29486144&scope=bot"
+        desc = f"To invite this bot to a guild, use this link: {url}"
+        embed = discord.Embed(
+            title="Invite Bot",
+            color=0x0000ff,
+            description=desc
+        )
+        await ctx.channel.send(embed=embed)
+
 
 def setup(bot):
     """ Add Info cog
