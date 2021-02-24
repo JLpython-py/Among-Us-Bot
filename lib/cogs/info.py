@@ -104,21 +104,6 @@ class Info(commands.Cog):
         await ctx.channel.send(embed=embed)
 
     @commands.command(
-        name="website", case_insensitive=True, pass_context=True
-    )
-    async def website(self, ctx):
-        """ Return a link to the repository GitHub page
-"""
-        url = "https://jlpython-py.github.io/Among-Us-Bot/"
-        desc = f"This project's GitHub page can be found here: {url}"
-        embed = discord.Embed(
-            title="Bot Project Website",
-            color=0x0000ff,
-            description=desc
-        )
-        await ctx.channel.send(embed=embed)
-
-    @commands.command(
         name="issue", case_insensitive=True, pass_context=True,
         aliases=["bug", "feature"]
     )
