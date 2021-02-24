@@ -32,7 +32,7 @@ from discord.ext import commands
 
 
 class Info(commands.Cog):
-    """ General bot and bot project info
+    """ General bot project info
 """
     def __init__(self, bot):
         self.bot = bot
@@ -41,7 +41,7 @@ class Info(commands.Cog):
         name="info", case_insensitive=True, pass_context=True
     )
     async def stats(self, ctx):
-        """ Return bot application info
+        """ Returns bot application info
 """
         app_info = await self.bot.application_info()
         embed = discord.Embed(
@@ -59,10 +59,11 @@ class Info(commands.Cog):
         await ctx.channel.send(embed=embed)
 
     @commands.command(
-        name="repository", case_insensitive=True, pass_context=True
+        name="repository", case_insensitive=True, pass_context=True,
+        aliases=["repo"]
     )
     async def repository(self, ctx):
-        """ Return a link to the project repository
+        """ Returns a link to the project repository
 """
         url = "https://github.com/JLpython-py/Among-Us-Bot"
         desc = f"This project's GitHub repository can be found here: {url}"
@@ -77,7 +78,7 @@ class Info(commands.Cog):
         name="wiki", case_insensitive=True, pass_context=True
     )
     async def wiki(self, ctx):
-        """ Return a link to the project repository wiki
+        """ Returns a link to the repository wiki
 """
         url = "https://github.com/JLpython-py/Among-Us-Bot/wiki"
         desc = f"The wiki for this project can be found here: {url}"
@@ -92,7 +93,7 @@ class Info(commands.Cog):
         name="data", case_insensitive=True, pass_context=True
     )
     async def data(self, ctx):
-        """ Return a link to a repository containing Among Us data
+        """ Returns a link to a GitHub repository containing CSV files of the data used
 """
         url = "https://github.com/JLpython-py/AmongUsData/"
         desc = f"Among Us data CSV files can be found here: {url}"
@@ -108,7 +109,7 @@ class Info(commands.Cog):
         aliases=["bug", "feature"]
     )
     async def issue(self, ctx):
-        """ Return a link to create a bug report or feature request GitHub issue
+        """ Returns a link to create a GitHub issue
 """
         url = "https://github.com/JLpython-py/Among-Us-Bot/issues/new/choose"
         desc = f"Create an issue to report a bug or suggest a feature here: {url}"
@@ -123,7 +124,7 @@ class Info(commands.Cog):
         name="invite", case_insensitive=True, pass_context=True
     )
     async def invite(self, ctx):
-        """ Return a link to invite the Discord bot to a guild
+        """ Returns a link for inviting the Discord bot to a guild
 """
         url = "https://discord.com/api/oauth2/authorize?client_id=793568531757137970&permissions=29486144&scope=bot"
         desc = f"To invite this bot to a guild, use this link: {url}"
@@ -136,6 +137,6 @@ class Info(commands.Cog):
 
 
 def setup(bot):
-    """ Add Info cog
+    """ Adds Info cog
 """
     bot.add_cog(Info(bot))

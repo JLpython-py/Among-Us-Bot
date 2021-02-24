@@ -35,12 +35,18 @@ SOFTWARE.
 """
 
 import glob
+import logging
 import os
 
 import discord
 from discord.ext import commands
 
 from lib.db import db
+
+logging.basicConfig(
+    level=logging.INFO,
+    format=" %(asctime)s - %(levelname)s - %(message)s"
+)
 
 
 class BotRoot(commands.Bot):
@@ -73,10 +79,13 @@ class BotRoot(commands.Bot):
         for path in cog_paths:
             cog = path[1][0]
             self.load_extension(f"lib.cogs.{cog}")
+            logging.info("Loaded cog: %s", cog)
             setattr(self, cog, False)
+        logging.info("Loaded all cogs")
 
     async def on_ready(self):
         """ Change bot activity
 """
+        logging.info("Ready: %s", self.user.name)
         game = discord.Game("Among Us | +")
         await self.change_presence(activity=game)
