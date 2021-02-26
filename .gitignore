@@ -1,5 +1,9 @@
 virtualenv/
 token.txt
+<<<<<<< HEAD
 .idea/
 **/__pycache__/
 data/db
+=======
+repository_logo.png
+>>>>>>> parent of 4602cf9 (Merge branch 'development' into main)
