@@ -1,8 +1,0 @@
-Name,Type,Locations,Severity
-View Admin Map,Monitor,Admin,N/A
-Check Security Cameras,Monitor,Security,N/A
-Check Vitals,Monitor,Office,N/A
-Fix Communications Sabotage,Fix Sabotage,Communications,Major
-Fix Lights,Fix Sabotage,Electrical,Major
-Open Doors,Fix Sabotage,"Communications, Electrical, Laboratory, O2, Office, Storage, Weapons",Minor
-Reset Seismic Stabilizers,Fix Sabotage,"Outside(NE), Outside(NW)",Fatal
