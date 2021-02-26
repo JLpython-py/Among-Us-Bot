@@ -1,7 +1,5 @@
 virtualenv/
-data/Airship/
 token.txt
-repository_logo.png
 .idea/
 **/__pycache__/
-data/locked.txt 
+data/db

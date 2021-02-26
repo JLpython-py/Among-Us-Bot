@@ -85,7 +85,7 @@ The bot requires the following permissions turned on to function properly, but t
 | | Embed Links | Move Members |
 | | Attach Files | |
 | | Read Message History | |
-| | Add Reactoins | |
+| | Add Reactions | |
 
 **Permission Integer**: 9486144
 
