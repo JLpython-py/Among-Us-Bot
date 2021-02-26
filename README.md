@@ -1,56 +1,89 @@
 <h1>AmongUs-MapBot</h1>
 
-![GitHub last commit](https://img.shields.io/github/last-commit/JLpython-py/AmongUs-MapBot)
-![GitHub repo size](https://img.shields.io/github/repo-size/JLpython-py/AmongUs-MapBot)
-![GitHub issues](https://img.shields.io/github/issues/JLpython-py/AmongUs-MapBot)
-![GitHub issues by-label](https://img.shields.io/github/issues/JLpython-py/AmongUs-MapBot/enhancement)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/JLpython-py/AmongUs-MapBot)
-![GitHub deployments](https://img.shields.io/github/deployments/JLpython-py/AmongUs-MapBot/GitHub-pages)
-![GitHub](https://img.shields.io/github/license/JLpython-py/AmongUs-MapBot)
-
-![AmongUs-MapBot logo](https://user-images.githubusercontent.com/72679601/105637399-32da5300-5e22-11eb-8c15-f2b14f3a1568.png)
-
-The AmongUs-MapBot is a Discord bot which acts as an easily-accessible database of Among Us. Members of guilds with this bot can interact with the bot to quickly reference this information.
-
-<h2>Features</h2>
-
-<h3>Map Database</h2>
-
-![TheSkeld retrieve "Clean O2 Filter"](https://user-images.githubusercontent.com/72679601/105637275-89935d00-5e21-11eb-86bd-19afb25bd01e.png)
-
-This repository has data about nearly all aspect of the Among Us maps. Member of guilds can use a sent of comprehensive commands to reference the available data. [See more details](https://github.com/JLpython-py/AmongUs-MapBot/wiki/MapInfo).
-
-**Coming Soon: Data from the soon-to-be-released _Airship_ map has already been compiled. On the day the map is released, the available data will be released.**
-
-<h3>Random Among Us</h2>
-
-![randmap](https://user-images.githubusercontent.com/72679601/105637274-88fac680-5e21-11eb-92a4-f84084454e4f.png)
-![randsettings](https://user-images.githubusercontent.com/72679601/105637273-88fac680-5e21-11eb-9d35-a7167fc2ce7b.png)
-
-Just like its name implies, this feature allows members to generate a random map, a random number of impostors, and a random option for a specific setting or for all the in-game settings. [See more details](https://github.com/JLpython-py/AmongUs-MapBot/wiki/RandomAmongUs).
-
-<h3>Coming Soon: Voice Channel Control</h3>
-
-Members in the guild can claim a voice channel and, when claimed, that member can control the voices and statuses of other members in that voice channel. Rather than a set of commands, the feature utilizes emojis attached to an embed for the member to use. [See more details]().
-
-<h2>Command Guide</h2>
-
-A command guide for each of the cogs of the bot can be found in the repository's [Wiki](https://github.com/JLpython-py/AmongUs-MapBot/wiki).
+This Discord Bot, called the AmongUs MapBot, acts as an easily accessbile database for information regarding each of the Among Us maps. The information in this repository is free for anyone to use, even if it is not used in the Discord Bot.
 
 <h2>Installation</h2>
 
 The bot requires the following permissions turned on to function properly, but they can be turned off in channels where the bot is not needed:
 
-| General Permissions | Text Permissions | Voice Permissions |
-| :--- | :--- | :--- |
-| View Channels | Send Messages | |
-| | Embed Links | |
-| | Attach Files | |
-| | Read Message History | |
-| | Add Reactions | |
+<h3>General Permissions</h3>
 
-Add the [AmongUs MapBot](https://discord.com/api/oauth2/authorize?client_id=793568531757137970&permissions=117824&scope=bot) to your guild.
+ - View Channels
 
-<h2>Contributing</h2>
+<h3>Text Permissions</h3>
 
-This repository is constantly maintained and the developers are open to suggestions for more features. If you have a feature to suggest or a bug to report, create a new issue under this repository's [Issues](https://github.com/JLpython-py/AmongUs-MapBot/issues) tab.
+ - Send Messages
+ - Manage Messages
+ - Embed Links
+ - Attach Files
+ - Read Message History
+ - Add Reactions
+ 
+<h3>Voice Permissions</h3>
+
+ - N/A
+
+The following link can be used to add this bot to a server with all the necessary permissions:
+- [Add AmongUs MapBot](https://discord.com/api/oauth2/authorize?client_id=793568531757137970&permissions=126016&scope=bot)
+
+<h2>Commands</h2>
+
+<h3>Command Prefix</h3>
+The command prefix for this bot is the '+' character. Currently, there is no customization for the command prefix.
+
+<h3>Command List</h3>
+
+All the commands are case-insensitive. Currently there are two commands available for the bot, `retrieve` and `search`. Each command returns an embed with features unique to the command.
+
+![help command](https://user-images.githubusercontent.com/72679601/103316442-74234280-49dd-11eb-85a8-d5ca5308e707.png)
+![help command response](https://user-images.githubusercontent.com/72679601/103316443-75546f80-49dd-11eb-9c42-9ee993f60a73.png)
+
+<h4>Command: retrieve</h4>
+
+*Note: This command can be aliased to `r`*
+
+![help retrieve command](https://user-images.githubusercontent.com/72679601/103316567-c5cbcd00-49dd-11eb-98ca-22c88c10fc28.png)
+![help retrieve command reponse](https://user-images.githubusercontent.com/72679601/103316571-c7959080-49dd-11eb-9b71-428c724becf6.png)
+
+<h5>Arguments</h5>
+
+ - `<mapname>`: The name of the map, condensed into one word, case-insensitive. Since there are only three maps, the possible values for this parameter are `MiraHQ`, `Polus`, or `TheSkeld`.
+ - `<category>`: The category which the argument `<option>` belongs to, case-insensitive. Currently, the available values for this parameter are `actions`, `locations`, `maps`, `tasks`, or `vents`.
+ - `<option>`: The name of the item which is being retrieved, case-insensitive. The available values for this parameter varies based on the `<category>` argument. Since many of the possible values for this argument contain multiple words, it is recommended that the option is surrounded by double quotes ("), for example `"Option Parameter"` as opposed to `Option Parameters`.
+ 
+<h5>Return Values</h5> 
+
+![retrieve command w/ mapname=Polus category=locations option="Admin"](https://user-images.githubusercontent.com/72679601/103320919-19ddae00-49ec-11eb-9920-095b7da9526f.png)
+![retrieve command response w/ mapname=Polus category=locations option="Admin"](https://user-images.githubusercontent.com/72679601/103320920-1a764480-49ec-11eb-9142-c40bbcdeced6.png)
+
+This command returns an embed with an image and information which correspond to the `<option>` argument. Once this command is called, the message the member sent which called the command is deleted, in order to limit the number of message sent in a channel.
+
+<h4>Command: `search`</h4>
+
+*Note: This command can be aliased to `s`*
+
+![help search command](https://user-images.githubusercontent.com/72679601/103316568-c6646380-49dd-11eb-860a-6af0c18ed45f.png)
+![help search command response](https://user-images.githubusercontent.com/72679601/103316570-c6fcfa00-49dd-11eb-85ff-e7ea660103c0.png)
+
+<h5>Arguments</h5>
+
+ - `<mapname>`: The name of the map, condensed into one word, case-insensitive. Since there are only three maps, the possible values for this parameter are `MiraHQ`, `Polus`, or `TheSkeld`.
+ - `<category>`: The category which the argument `<option>` belongs to, case-insensitive. Currently, the available values for this parameter are `actions`, `locations`, `maps`, `tasks`, or `vents`.
+ 
+<h5>Return Values</h5>
+
+![search command w/ mapname=TheSkeld category=actions](https://user-images.githubusercontent.com/72679601/103317104-5e168180-49df-11eb-8899-7a4cafb9698c.png)
+![search command response w/ mapname=TheSkeld category=actions](https://user-images.githubusercontent.com/72679601/103317103-5e168180-49df-11eb-8951-80d784aae0c5.png)
+
+This command returns an embed with an image of the logo of the map and the basic description items of the option. The message is also reacted with eight emojis which the member can use to scroll along the list. Note that the scrolling wraps, i.e. scrolling backwards from the first page will scroll to the last page and scrolling forwards from the last page will scroll to the first page. Once this command is called, the message the member sent which called the command is deleted, in order to limit the number of messages in a channel. This command only allows the member who originally send the `search` command to scroll with the emojis. Other members who attempt to scroll with the emojis will be ignored, and their reaction removed. A member can only have one of these embeds open at a time, i.e. calling this command, then calling it again will delete the first message. The only exception to this is if the member reacts with the ✔ emoji.
+
+<h6>Emoji Usage</h6>
+
+ - ⏮ Jumps to the first page
+ - ⏪ Scrolls five pages preceding the current page.
+ - ◀ Scrolls to the preceding page.
+ - ▶ Scrolls to the succeeding page.
+ - ⏩ Scrolls five pages succeeding the current page.
+ - ⏭ Jumps to the last page
+ - ✔ Imitates the `retrieve` command with the `<option>` parameter set to the current page.
+ - ❌ Closes the embed and deletes the message
