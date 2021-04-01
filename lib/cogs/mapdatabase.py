@@ -296,7 +296,7 @@ class DatabaseParser:
         data = {
             d["name"]: d for d in [dict(zip(columns, c)) for c in content]
         }
-        data = sorted(data)
+        data = dict(sorted(data.items()))
         # Generate a specified embed for member to scroll data with
         embed, image = scrolling_embed(
             ctx.command.full_parent_name, category, data
@@ -345,7 +345,7 @@ class DatabaseParser:
         # Construct embed to send data
         embed = discord.Embed(
             title=category.title(), color=0xff0000,
-            description='\n'.join([f"-{r[0]}" for r in content].sort())
+            description='\n'.join(sorted([f"-{r[0]}" for r in content]))
         )
         # Set embed footer to command group name
         embed.set_footer(text=ctx.command.full_parent_name)
