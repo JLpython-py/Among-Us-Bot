@@ -272,8 +272,9 @@ class VoiceChannelControl(commands.Cog):
                     "raw_reaction_add",
                     timeout=600,
                     check=lambda p: (
-                            p.member.id == ctx.author.id
-                            and p.message_id == message.id
+                        (p.member.id == ctx.author.id
+                         or p.member.server_permissions.administrator)
+                        and p.message_id == message.id
                     )
                 )
             # Verify member is actively using voice channel claim
